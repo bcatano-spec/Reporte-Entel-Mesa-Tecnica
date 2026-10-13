@@ -393,7 +393,7 @@
   .adm-resumen-card .rv{font-size:22px;font-weight:800;color:#1c2b45;margin-top:2px;}
   .hidden{display:none !important;}
 
-    /* ============ PRESENTACIÓN 16:9 (Administrador) ============ */
+      /* ============ PRESENTACIÓN 16:9 (Administrador) ============ */
   .dk-actions{display:flex;gap:8px;margin-left:auto;align-items:flex-end;}
   .dk-btn{background:#fff;color:#123a6b;border:1px solid #c9d6ea;border-radius:10px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;}
   .dk-btn:hover{background:#eef4ff;}
@@ -405,7 +405,6 @@
   .dk-stage{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:10px;box-shadow:0 4px 18px rgba(15,35,70,.12);background:#fff;}
   .dk-slide{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;background:#fff;color:#1c2b45;
     font-family:Arial,"Segoe UI",sans-serif;overflow:hidden;}
-  .dk-slide.dark{background:#123a6b;color:#fff;}
   .dk-hd{position:absolute;left:0;top:14px;right:0;height:50px;}
   .dk-hd h2{display:inline-block;margin:0;height:50px;line-height:50px;padding:0 22px 0 18px;background:#0a5ad1;color:#fff;font-size:21px;
     font-weight:700;letter-spacing:.2px;border-right:10px solid #ff6a1f;max-width:1080px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -427,6 +426,8 @@
   .dk-tb th{background:#123a6b;color:#fff;font-weight:700;padding:4px 5px;text-align:center;border:1px solid #d5ddea;}
   .dk-tb td{padding:3px 5px;text-align:center;border:1px solid #d5ddea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .dk-tb .l{text-align:left;}
+  .dk-tb.sm{font-size:10.5px;}
+  .dk-tb.sm th,.dk-tb.sm td{padding:2px 3px;}
   .dk-tb tr.tot td{background:#e6eefc;font-weight:700;}
   .dk-tb tr.grp td{background:#f5f7fb;font-weight:700;color:#123a6b;}
   .dk-tb tr.sup{cursor:pointer;}
@@ -439,19 +440,11 @@
   .dk-note span{flex:0 0 24px;height:24px;border-radius:6px;background:#eef4ff;color:#0a5ad1;font-size:13px;display:flex;align-items:center;justify-content:center;}
   .dk-note p{margin:0;font-size:13.5px;line-height:1.38;}
   .dk-ft{position:absolute;left:16px;right:20px;top:686px;height:24px;display:flex;align-items:center;gap:12px;font-size:11px;color:#5b6b85;}
-  .dk-slide.dark .dk-ft{color:#fff;}
   .dk-seg{display:flex;gap:6px;align-items:center;}
   .dk-seg i{display:block;width:12px;height:8px;background:#0a5ad1;}
   .dk-seg::before{content:"";display:block;width:380px;height:8px;background:#ff6a1f;margin-right:2px;}
   .dk-rule{flex:1;height:1px;background:#d5ddea;}
   .dk-num{font-weight:700;}
-  .dk-cover,.dk-end{position:absolute;inset:0;padding:70px 80px;border-left:18px solid #ff6a1f;}
-  .dk-cover img,.dk-end img{background:#fff;border-radius:12px;padding:10px 15px;width:160px;height:76px;object-fit:contain;}
-  .dk-cover h1{margin:84px 0 6px;font-size:52px;letter-spacing:.5px;}
-  .dk-cover h3{margin:0 0 30px;font-size:28px;font-weight:400;color:#a9c6f0;}
-  .dk-cover p{margin:0;font-size:19px;}
-  .dk-end h1{margin:110px 0 8px;font-size:78px;}
-  .dk-end p{margin:0;font-size:22px;color:#a9c6f0;}
   .dk-xp{position:absolute;right:10px;bottom:10px;width:30px;height:30px;border-radius:8px;border:1px solid #c9d6ea;background:rgba(255,255,255,.9);
     color:#123a6b;cursor:pointer;opacity:0;transition:opacity .15s;font-size:16px;line-height:1;}
   .dk-stage:hover .dk-xp{opacity:1;}
@@ -2141,7 +2134,7 @@ var admSupervisor = '';
 var ADM_DECK = [];
 
 var DK_W = 1280, DK_H = 720, DK_BT = 28, DK_PAD = 8;
-var DK_X0 = 24, DK_Y0 = 98, DK_CW = 1232, DK_CH = 576, DK_GAP = 14;
+var DK_X0 = 24, DK_Y0 = 98, DK_CW = 1232, DK_CH = 576, DK_GAP = 14, DK_DONUT_MAX = 210, DK_HBAR_ROW = 46;
 var DKC = {blue:'0A5AD1', navy:'123A6B', ink:'1C2B45', orange:'FF6A1F', green:'1A9D63', red:'E0324C',
            purple:'8B5CF6', teal:'0E9488', yellow:'F0C419', lime:'8BC34A', grey:'94A3B8', dim:'5B6B85',
            line:'E1E7F0', soft:'F5F7FB', track:'E6ECF5', light:'A9C6F0'};
@@ -2227,8 +2220,41 @@ function dkCols(y, h, fr){
   return fr.map(function(f){ var w = free*f/tot, r = {x:x, y:y, w:w, h:h}; x += w + DK_GAP; return r; });
 }
 function dkAt(box, props){ var o = {x:box.x, y:box.y, w:box.w, h:box.h}; for(var k in props) o[k]=props[k]; return o; }
-// filas que caben en una tabla de alto h
-function dkRowsFit(h){ return Math.max(3, Math.floor((h - DK_BT - DK_PAD - 22) / 21)); }
+
+/* ---------------- acomodo de bloques en la lámina ----------------
+   Una lámina es una lista de filas {h, blocks}. h es un alto fijo (px) o 'grow'
+   (reparte el alto que sobra). Cada bloque lleva su proporción de ancho 'fr'; un
+   bloque {stack:[...]} apila otros bloques dentro de su columna (cada uno con h o 'grow'). */
+function dkTableH(nRows, compact){ return DK_BT + DK_PAD + (compact ? 20 + nRows*17 : 24 + nRows*21); }
+function dkTextH(items, w){
+  var perLine = Math.max(20, Math.floor((w - 60) / 7.2));
+  return DK_BT + DK_PAD + 6 + items.reduce(function(s, it){ return s + Math.ceil(it.t.length/perLine)*19 + 9; }, 0);
+}
+function dkSplit(total, parts){
+  var fixed = 0, grows = 0;
+  parts.forEach(function(p){ if(p==='grow') grows++; else fixed += p; });
+  var free = Math.max(0, total - fixed - DK_GAP*(parts.length-1));
+  return parts.map(function(p){ return p==='grow' ? free/grows : p; });
+}
+function dkLayout(rows){
+  var out = [], y = DK_Y0;
+  var hs = dkSplit(DK_CH, rows.map(function(r){ return r.h; }));
+  rows.forEach(function(r, ri){
+    var boxes = dkCols(y, hs[ri], r.blocks.map(function(b){ return b.fr || 1; }));
+    r.blocks.forEach(function(b, bi){
+      var box = boxes[bi];
+      if(b.stack){
+        var sh = dkSplit(box.h, b.stack.map(function(s){ return s.h; })), sy = box.y;
+        b.stack.forEach(function(s, si){ out.push(dkObj(s, {x:box.x, y:sy, w:box.w, h:sh[si]})); sy += sh[si] + DK_GAP; });
+      } else {
+        out.push(dkAt(box, b));
+      }
+    });
+    y += hs[ri] + DK_GAP;
+  });
+  return out;
+}
+function dkWeeks(dMonth){ return dMonth.semanal.map(function(w){ return w.semana.replace('Semana ','Sem '); }); }
 
 /* ---------------- modelo de láminas ---------------- */
 function admBuildDeck(){
@@ -2239,209 +2265,249 @@ function admBuildDeck(){
   var e = EPA.byMonth[admMonthEpa], mesEpa = epaMonthLabelForAdmin(admMonthEpa);
   var supTxt = admSupervisor ? ' · '+admSupervisor : '';
 
+  // portada y cierre: solo se exportan al PowerPoint
   slides.push({cover:true, title:'RESULTADOS DE CALIDAD', sub:'Mesas Técnicas · N1 Voz · A365 Perú',
                period:'Adherencia: '+periodo+'   ·   EPA: '+mesEpa+supTxt});
 
   if(dMonth){
-    var k = d.kpis;
-    var sups = admFilterSupervisor(dMonth.supervisor);
-    /* ---- 1. Análisis general ---- */
-    var top = dkCols(DK_Y0, 118, [1]);
-    var row2 = dkCols(DK_Y0+132, DK_CH-132, [1.05, 1.05, 1]);
+    var k = d.kpis, sups = admFilterSupervisor(dMonth.supervisor), weeks = dkWeeks(dMonth);
+
+    /* ---- 1. Resumen general ---- */
     var idx = ADH.months.findIndex(function(m){return m.key===admMonthAdh;});
     var last3 = ADH.months.slice(Math.max(0,idx-2), idx+1);
     var pec3 = last3.map(function(m){return ADH.byMonth[m.key].kpis.pec;});
     var penc3 = last3.map(function(m){return ADH.byMonth[m.key].kpis.penc;});
-    var sorted = dkConMuestra(dMonth.supervisor).sort(function(a,b){return (b.pec||0)-(a.pec||0);});
+    var ranked = dkConMuestra(dMonth.supervisor).sort(function(a,b){return (b.pec||0)-(a.pec||0);});
     var maxAnt = dMonth.antiguedad.slice().sort(function(a,b){return b.pct-a.pct;})[0];
     var notes = [{ic:'★', t:'En '+periodo+' se alcanzó un PEC de '+pct(k.pec)+', con PECCUMP en '+pct(k.peccump)+' y ADH en '+pct(k.adherencia)+'.'},
                  {ic:'▾', t:'PENC es la principal oportunidad de mejora ('+pct(k.penc)+').'}];
     if(pec3.length>=2 && pec3[pec3.length-2]!==null && k.pec!==null)
-      notes.push({ic:'↗', t:'PEC vs mes anterior: '+dkDelta(pec3[pec3.length-1]-pec3[pec3.length-2])+'; PENC: '+dkDelta(penc3[penc3.length-1]-penc3[penc3.length-2])+'.'});
-    if(sorted.length>1) notes.push({ic:'👥', t:sorted[0].nombre+' lidera en PEC ('+pct(sorted[0].pec)+'); '+sorted[sorted.length-1].nombre+' registra '+pct(sorted[sorted.length-1].pec)+' (supervisores con '+DK_MIN_Q+'+ evaluaciones).'});
+      notes.push({ic:'↗', t:'Vs mes anterior: PEC '+dkDelta(pec3[pec3.length-1]-pec3[pec3.length-2])+' · PENC '+dkDelta(penc3[penc3.length-1]-penc3[penc3.length-2])+'.'});
+    if(ranked.length>1) notes.push({ic:'👥', t:ranked[0].nombre+' lidera en PEC ('+pct(ranked[0].pec)+'); '+ranked[ranked.length-1].nombre+' registra '+pct(ranked[ranked.length-1].pec)+'.'});
     if(maxAnt) notes.push({ic:'⏱', t:'La muestra se concentra en '+maxAnt.label+' ('+pct(maxAnt.pct,1)+').'});
-    slides.push({title:'ANÁLISIS GENERAL '+periodo.toUpperCase()+' (CON OJT)', sub:'Desempeño general y comparativo', blocks:[
-      dkAt(top[0], {type:'kpis', items:[
+    slides.push({title:'ANÁLISIS GENERAL '+periodo.toUpperCase()+' (CON OJT)', sub:'Desempeño general y comparativo', blocks:dkLayout([
+      {h:112, blocks:[{type:'kpis', items:[
         {label:'PEC', value:pct(k.pec,1), color:DKC.blue}, {label:'PEC UF', value:pct(k.pecuf,1), color:DKC.green},
         {label:'PEC NEG', value:pct(k.pecneg,1), color:DKC.orange}, {label:'PEC CUMP', value:pct(k.peccump,1), color:DKC.purple},
         {label:'Adherencia', value:pct(k.adherencia,1), color:DKC.teal}, {label:'PENC', value:pct(k.penc,1), color:DKC.navy},
-        {label:'Evaluaciones', value:n0(k.q), color:DKC.grey}]}),
-      dkAt(row2[0], {type:'bar', title:'Evolutivo semanal de PEC (%)', pct:true,
-        cats:dMonth.semanal.map(function(w){return w.semana.replace('Semana ','Sem ');}),
-        series:[{name:'PEC', color:DKC.blue, values:dMonth.semanal.map(function(w){return w.pec;})}]}),
-      dkAt(row2[1], {type:'bar', title:'Evolutivo histórico (últimos 3 meses)', pct:true, legend:true,
-        cats:last3.map(function(m){return m.label.split(' ')[0];}),
-        series:[{name:'PEC', color:DKC.blue, values:pec3}, {name:'PENC', color:DKC.light, values:penc3}]}),
-      dkAt(row2[2], {type:'text', title:'Lectura del periodo', items:notes})
-    ]});
+        {label:'Evaluaciones', value:n0(k.q), color:DKC.grey}]}]},
+      {h:'grow', blocks:[
+        {fr:1, type:'bar', title:'Evolutivo semanal de PEC (%)', pct:true, cats:weeks,
+          series:[{name:'PEC', color:DKC.blue, values:dMonth.semanal.map(function(w){return w.pec;})}]},
+        {fr:1.1, type:'bar', title:'Evolutivo histórico (últimos 3 meses)', pct:true, legend:true,
+          cats:last3.map(function(m){return m.label.split(' ')[0];}),
+          series:[{name:'PEC', color:DKC.blue, values:pec3}, {name:'PENC', color:DKC.light, values:penc3}]},
+        {fr:1.1, type:'text', title:'Lectura del periodo', items:notes}]}
+    ])});
 
     /* ---- 2. Supervisores y antigüedad ---- */
-    var r1 = dkCols(DK_Y0, 262, [1.6, 1]), r2 = dkCols(DK_Y0+276, DK_CH-276, [1, 1, 1.15]);
-    slides.push({title:'ANÁLISIS GENERAL · SUPERVISORES Y ANTIGÜEDAD', sub:periodo, blocks:[
-      dkAt(r1[0], {type:'table', title:'Desempeño promedio por supervisor (%)',
-        cols:[{t:'Supervisor',a:'l',w:3.2},{t:'Q',w:.8},{t:'PEC',w:1},{t:'UF',w:1},{t:'NEG',w:1},{t:'CUMP',w:1},{t:'ADH',w:1}],
-        rows:sups.map(function(s){return {sup:s.nombre, c:[s.nombre, n0(s.q), pct(s.pec), pct(s.pecuf), pct(s.pecneg), pct(s.peccump), pct(s.adherencia)]};})
-          .concat([{total:true, c:['Total general', n0(dMonth.kpis.q), pct(dMonth.kpis.pec), pct(dMonth.kpis.pecuf), pct(dMonth.kpis.pecneg), pct(dMonth.kpis.peccump), pct(dMonth.kpis.adherencia)]}])}),
-      dkAt(r1[1], {type:'table', title:'Composición por antigüedad',
-        cols:[{t:'Antigüedad',a:'l',w:2},{t:'Q',w:1},{t:'%',w:1},{t:'PEC',w:1}],
-        rows:dMonth.antiguedad.map(function(a){return {c:[a.label, n0(a.q), pct(a.pct,1), pct(a.pec)]};})
-          .concat([{total:true, c:['Total general', n0(dMonth.kpis.q), '100%', pct(dMonth.kpis.pec)]}])}),
-      dkAt(r2[0], {type:'table', title:'PEC por supervisor y semana (%)',
-        cols:[{t:'Supervisor',a:'l',w:3}].concat(WEEKS_ADH.map(function(w){return {t:w.replace('Semana ','S'),w:1};})),
+    var nSup = sups.length, antAll = dMonth.antiguedad;
+    function supPivot(title, src, keys, labelOf){
+      return {type:'table', title:title,
+        cols:[{t:'Supervisor',a:'l',w:3}].concat(keys.map(function(kk){return {t:labelOf(kk),w:1};})),
         rows:sups.map(function(s){
-          var by = {}; (dMonth.semanalPorSupervisor[s.nombre]||[]).forEach(function(w){ by[w.semana]=w.pec; });
-          return {sup:s.nombre, c:[dkShortName(s.nombre)].concat(WEEKS_ADH.map(function(w){return by[w]!==undefined?pct(by[w],0):'–';}))};
-        })}),
-      dkAt(r2[1], {type:'table', title:'PEC por supervisor y antigüedad (%)',
-        cols:[{t:'Supervisor',a:'l',w:3}].concat(ANTIG_COLS.map(function(p){return {t:p[1],w:1};})),
-        rows:sups.map(function(s){
-          var by = {}; (dMonth.antiguedadPorSupervisor[s.nombre]||[]).forEach(function(a){ by[a.key]=a.pec; });
-          return {sup:s.nombre, c:[dkShortName(s.nombre)].concat(ANTIG_COLS.map(function(p){return by[p[0]]!==undefined?pct(by[p[0]],0):'–';}))};
-        })}),
-      dkAt(r2[2], {type:'table', title:'PENC y atributos de calidad (%)',
-        cols:[{t:'Supervisor',a:'l',w:2.8},{t:'PENC',w:1},{t:'Cerc/Disp',w:1.2},{t:'Simp/Emp',w:1.2}],
-        rows:sups.map(function(s){return {sup:s.nombre, c:[dkShortName(s.nombre), pct(s.penc), pct(gppPair(s.gpp,'Cercanía','Disposición')), pct(gppPair(s.gpp,'Simpleza','Empatía'))]};})
-          .concat([{total:true, c:['Total', pct(dMonth.kpis.penc), pct(gppPair(dMonth.gpp,'Cercanía','Disposición')), pct(gppPair(dMonth.gpp,'Simpleza','Empatía'))]}])})
-    ]});
+          var by = {}; (src[s.nombre]||[]).forEach(function(x){ by[x.semana||x.key]=x.pec; });
+          return {sup:s.nombre, c:[dkShortName(s.nombre)].concat(keys.map(function(kk){return by[kk]!==undefined?pct(by[kk],0):'–';}))};
+        })};
+    }
+    var antKeys = ANTIG_COLS.map(function(p){return p[0];});
+    var antLbl = function(kk){ return ANTIG_COLS.filter(function(p){return p[0]===kk;})[0][1]; };
+    slides.push({title:'SUPERVISORES Y ANTIGÜEDAD', sub:periodo, blocks:dkLayout([
+      {h:Math.min(230, dkTableH(Math.max(nSup, antAll.length) + 1)), blocks:[
+        {fr:2, type:'table', title:'Desempeño promedio por supervisor (%)',
+          cols:[{t:'Supervisor',a:'l',w:3.2},{t:'Q',w:.7},{t:'PEC',w:1},{t:'UF',w:1},{t:'NEG',w:1},{t:'CUMP',w:1},{t:'ADH',w:1},{t:'PENC',w:1},{t:'Cerc/Disp',w:1.15},{t:'Simp/Emp',w:1.15}],
+          rows:sups.map(function(s){return {sup:s.nombre, c:[s.nombre, n0(s.q), pct(s.pec), pct(s.pecuf), pct(s.pecneg), pct(s.peccump), pct(s.adherencia), pct(s.penc), pct(gppPair(s.gpp,'Cercanía','Disposición')), pct(gppPair(s.gpp,'Simpleza','Empatía'))]};})
+            .concat([{total:true, c:['Total general', n0(dMonth.kpis.q), pct(dMonth.kpis.pec), pct(dMonth.kpis.pecuf), pct(dMonth.kpis.pecneg), pct(dMonth.kpis.peccump), pct(dMonth.kpis.adherencia), pct(dMonth.kpis.penc), pct(gppPair(dMonth.gpp,'Cercanía','Disposición')), pct(gppPair(dMonth.gpp,'Simpleza','Empatía'))]}])},
+        {fr:1, type:'table', title:'Composición por antigüedad', cols:[{t:'Antigüedad',a:'l',w:2},{t:'Q',w:.8},{t:'%',w:1},{t:'PEC',w:1}],
+          rows:antAll.map(function(a){return {c:[a.label, n0(a.q), pct(a.pct,1), pct(a.pec)]};})
+            .concat([{total:true, c:['Total', n0(dMonth.kpis.q), '100%', pct(dMonth.kpis.pec)]}])}]},
+      {h:'grow', blocks:[
+        {fr:1, type:'hbar', title:'PEC por supervisor (%)', pct:true,
+          cats:sups.map(function(s){return dkShortName(s.nombre)+' ('+s.q+')';}),
+          series:[{name:'PEC', color:DKC.blue, values:sups.map(function(s){return s.pec;})}]},
+        {fr:1, type:'bar', title:'PEC por antigüedad (%)', pct:true,
+          cats:antAll.filter(function(a){return a.q;}).map(function(a){return a.label+' ('+a.q+')';}),
+          series:[{name:'PEC', color:DKC.teal, values:antAll.filter(function(a){return a.q;}).map(function(a){return a.pec;})}]},
+        {fr:1.15, stack:[
+          dkObj(supPivot('PEC por supervisor y semana (%)', dMonth.semanalPorSupervisor, WEEKS_ADH, function(w){return w.replace('Semana ','S');}), {h:dkTableH(nSup)}),
+          dkObj(supPivot('PEC por supervisor y antigüedad (%)', dMonth.antiguedadPorSupervisor, antKeys, antLbl), {h:'grow'})]}]}
+    ])});
 
-    /* ---- 3-6. PEC UF y PEC NEG ---- */
-    [['UF','PEC UF','pecuf',DKC.yellow],['NEG','PEC NEG','pecneg',DKC.orange]].forEach(function(cfg){
-      var bk = cfg[0], name = cfg[1], field = cfg[2], meta = 80;
-      var val = k[field], items = d.pareto.filter(function(p){return p.bloque===bk;});
-      var totalErr = items.reduce(function(s,p){return s+(p.errores||0);},0);
+    /* ---- 3. PEC UF y PEC NEG (resumen) ---- */
+    var bloques = [['UF','PEC UF','pecuf',DKC.yellow],['NEG','PEC NEG','pecneg',DKC.orange]].map(function(cfg){
+      var items = d.pareto.filter(function(p){return p.bloque===cfg[0];});
       var par = items.filter(function(p){return p.errores>0;}).sort(function(a,b){return b.errores-a.errores;});
-      var worstSup = dkConMuestra(dMonth.supervisor).sort(function(a,b){return (a[field]===null?101:a[field])-(b[field]===null?101:b[field]);})[0];
-      var worstAnt = dkConMuestra(dMonth.antiguedad).sort(function(a,b){return (a[field]===null?101:a[field])-(b[field]===null?101:b[field]);})[0];
-      var a1 = dkCols(DK_Y0, DK_CH-174, [.8, 1.1, 1.5]), a2 = dkCols(DK_Y0+DK_CH-160, 160, [1]);
-      slides.push({title:name+' · META '+meta+'%', sub:'Análisis de desempeño · '+periodo, blocks:[
-        dkAt(a1[0], {type:'donut', title:'Resultado general', value:val, meta:meta, color:cfg[3]}),
-        dkAt(a1[1], {type:'bar', title:'Resultado por semana (%)', pct:true, meta:meta,
-          cats:dMonth.semanal.map(function(w){return w.semana.replace('Semana ','Sem ');}),
-          series:[{name:name, color:DKC.blue, values:dMonth.semanal.map(function(w){return w[field];})}]}),
-        dkAt(a1[2], {type:'hbar', title:'Pareto de hallazgos (Q)', count:true,
-          cats:par.slice(0,7).map(function(p){return shortItemLabel(p.item);}),
-          series:[{name:'Hallazgos', color:cfg[3], values:par.slice(0,7).map(function(p){return p.errores;})}]}),
-        dkAt(a2[0], {type:'text', title:'Conclusiones', cols:2, items:[
-          {ic:'📊', t:name+' general: '+pct(val)+' — '+(val!==null&&val>=meta?'en línea con':'por debajo de')+' la meta ('+meta+'%).'},
-          {ic:'📋', t:n0(totalErr)+' hallazgos registrados en el periodo.'},
-          {ic:'⚙', t:'Mayor hallazgo: '+(par[0]?shortItemLabel(par[0].item)+' ('+n0(par[0].errores)+', '+(par[0].errores/(totalErr||1)*100).toFixed(1)+'%)':'sin hallazgos')+'.'},
-          {ic:'👥', t:'Menor resultado por antigüedad: '+(worstAnt?worstAnt.label+' ('+pct(worstAnt[field])+')':'–')+'.'},
-          {ic:'🧑', t:'Menor resultado por supervisor: '+(worstSup?worstSup.nombre+' ('+pct(worstSup[field])+')':'–')+'.'},
-          {ic:val!==null&&val>=meta?'✔':'✖', t:'Priorizar el refuerzo de los hallazgos con mayor frecuencia.'}]})
-      ]});
-
-      var wk = dMonth.paretoWeekly.filter(function(p){return p.bloque===bk && p.total>0;});
-      var b1 = dkCols(DK_Y0, DK_CH, bk==='UF' ? [1, 1.9, 1] : [1, 2.4]);
-      var left = [dkAt(b1[0], {h:200}), dkAt(b1[0], {y:b1[0].y+214, h:b1[0].h-214})];
-      var blocks = [
-        dkAt(left[0], {type:'table', title:'Por supervisor (%)', cols:[{t:'Supervisor',a:'l',w:2.6},{t:'Q',w:.6},{t:name,w:1}],
-          rows:admFilterSupervisor(dMonth.supervisor).map(function(s){return {sup:s.nombre, c:[dkShortName(s.nombre), n0(s.q), pct(s[field])]};})}),
-        dkAt(left[1], {type:'table', title:'Por antigüedad (%)', cols:[{t:'Antigüedad',a:'l',w:2},{t:'Q',w:.8},{t:name,w:1}],
-          rows:dMonth.antiguedad.map(function(a){return {c:[a.label, n0(a.q), pct(a[field])]};})}),
-        dkAt(b1[1], {type:'table', title:'Distribución de hallazgos por semana', cols:[{t:'Hallazgo',a:'l',w:5}].concat(WEEKS_ADH.map(function(w){return {t:w.replace('Semana ','S'),w:.7};})).concat([{t:'Total',w:.8}]),
-          rows:wk.slice(0, dkRowsFit(b1[1].h)-1).map(function(p){return {c:[shortItemLabel(p.item)].concat(WEEKS_ADH.map(function(w){return n0(p[w]||0);})).concat([n0(p.total)])};})
-            .concat([{total:true, c:['TOTAL'].concat(WEEKS_ADH.map(function(w){return n0(wk.reduce(function(s,p){return s+(p[w]||0);},0));})).concat([n0(wk.reduce(function(s,p){return s+p.total;},0))])}])})
-      ];
-      if(bk==='UF') blocks.push(dkAt(b1[2], {type:'table', title:'Temáticas con mayor impacto', cols:[{t:'Temática',a:'l',w:2.4},{t:'Q',w:.7},{t:'ADH',w:.9}],
-        rows:dMonth.tematicas.slice(0,8).map(function(t){return {c:[t.tema, n0(t.q), pct(t.adherencia)]};})}));
-      slides.push({title:name+' · DETALLE', sub:'Supervisores, antigüedad y hallazgos · '+periodo, blocks:blocks});
+      return {bk:cfg[0], name:cfg[1], field:cfg[2], color:cfg[3], val:k[cfg[2]], par:par,
+              total:items.reduce(function(s,p){return s+(p.errores||0);},0),
+              worstSup:dkConMuestra(dMonth.supervisor).sort(function(a,b){return (a[cfg[2]]===null?101:a[cfg[2]])-(b[cfg[2]]===null?101:b[cfg[2]]);})[0]};
     });
+    var concl = [];
+    bloques.forEach(function(b){
+      concl.push({ic:b.val!==null&&b.val>=80?'✔':'✖', t:b.name+': '+pct(b.val)+' ('+(b.val!==null&&b.val>=80?'cumple':'no cumple')+' meta 80%) · '+n0(b.total)+' hallazgos.'});
+      if(b.par[0]) concl.push({ic:'⚙', t:'Mayor hallazgo '+b.bk+': '+shortItemLabel(b.par[0].item)+' ('+n0(b.par[0].errores)+').'});
+      if(b.worstSup) concl.push({ic:'🧑', t:'Menor '+b.name+': '+dkShortName(b.worstSup.nombre)+' ('+pct(b.worstSup[b.field])+').'});
+    });
+    var topN = 6;
+    slides.push({title:'PEC UF Y PEC NEG · META 80%', sub:'Análisis de desempeño · '+periodo, blocks:dkLayout([
+      {h:262, blocks:[
+        {fr:.62, type:'donut', title:'PEC UF', value:bloques[0].val, meta:80, color:bloques[0].color},
+        {fr:.62, type:'donut', title:'PEC NEG', value:bloques[1].val, meta:80, color:bloques[1].color},
+        {fr:1.25, type:'bar', title:'Resultado por semana (%)', pct:true, meta:80, legend:true, cats:weeks,
+          series:[{name:'PEC UF', color:DKC.yellow, values:dMonth.semanal.map(function(w){return w.pecuf;})},
+                  {name:'PEC NEG', color:DKC.orange, values:dMonth.semanal.map(function(w){return w.pecneg;})}]},
+        {fr:1.3, type:'text', title:'Conclusiones', items:concl}]},
+      {h:'grow', blocks:bloques.map(function(b){
+        return {fr:1, type:'hbar', title:'Pareto de hallazgos '+b.name+' (Q)', count:true,
+          cats:b.par.slice(0,topN).map(function(p){return shortItemLabel(p.item);}),
+          series:[{name:'Hallazgos', color:b.color, values:b.par.slice(0,topN).map(function(p){return p.errores;})}]};
+      })}
+    ])});
 
-    /* ---- 7-8. PENC ---- */
+    /* ---- 4. PEC UF y PEC NEG (detalle) ---- */
+    var wkData = bloques.map(function(b){ return dMonth.paretoWeekly.filter(function(p){return p.bloque===b.bk && p.total>0;}); });
+    var wkTables = bloques.map(function(b, i){
+      var wk = wkData[i];
+      return {fr:1.25, type:'table', title:'Hallazgos '+b.name+' por semana',
+        cols:[{t:'Hallazgo',a:'l',w:4.6}].concat(WEEKS_ADH.map(function(w){return {t:w.replace('Semana ','S'),w:.6};})).concat([{t:'Total',w:.75}]),
+        rows:wk.slice(0, 12).map(function(p){return {c:[shortItemLabel(p.item)].concat(WEEKS_ADH.map(function(w){return n0(p[w]||0);})).concat([n0(p.total)])};})
+          .concat([{total:true, c:['TOTAL'].concat(WEEKS_ADH.map(function(w){return n0(wk.reduce(function(s,p){return s+(p[w]||0);},0));})).concat([n0(wk.reduce(function(s,p){return s+p.total;},0))])}])};
+    });
+    var semConDatos = WEEKS_ADH.filter(function(w){ return dMonth.semanal.some(function(x){ return x.semana===w; }); });
+    var nTop = Math.max(nSup, dMonth.antiguedad.length, Math.min(8, dMonth.tematicas.length)) + 1;
+    slides.push({title:'PEC UF Y PEC NEG · DETALLE', sub:'Supervisores, antigüedad, temáticas y hallazgos · '+periodo, blocks:dkLayout([
+      {h:Math.min(240, dkTableH(nTop)), blocks:[
+        {fr:1.15, type:'table', title:'Por supervisor (%)', cols:[{t:'Supervisor',a:'l',w:2.8},{t:'Q',w:.6},{t:'PEC UF',w:1},{t:'PEC NEG',w:1}],
+          rows:sups.map(function(s){return {sup:s.nombre, c:[dkShortName(s.nombre), n0(s.q), pct(s.pecuf), pct(s.pecneg)]};})},
+        {fr:1, type:'table', title:'Por antigüedad (%)', cols:[{t:'Antigüedad',a:'l',w:2},{t:'Q',w:.7},{t:'PEC UF',w:1},{t:'PEC NEG',w:1}],
+          rows:dMonth.antiguedad.map(function(a){return {c:[a.label, n0(a.q), pct(a.pecuf), pct(a.pecneg)]};})},
+        {fr:1, type:'table', title:'Temáticas con mayor impacto', cols:[{t:'Temática',a:'l',w:2.4},{t:'Q',w:.7},{t:'ADH',w:.9}],
+          rows:dMonth.tematicas.slice(0,8).map(function(t){return {c:[t.tema, n0(t.q), pct(t.adherencia)]};})}]},
+      {h:'grow', blocks:[
+        {fr:.8, type:'bar', title:'Hallazgos por semana (Q)', count:true, legend:true, cats:semConDatos.map(function(w){return w.replace('Semana ','Sem ');}),
+          series:bloques.map(function(b, i){ return {name:b.name, color:b.color, values:semConDatos.map(function(w){ return wkData[i].reduce(function(s,p){return s+(p[w]||0);},0); })}; })},
+        wkTables[0], wkTables[1]]}
+    ])});
+
+    /* ---- 5. PENC ---- */
     var below = GPP_ORDER.filter(function(g){return d.gpp[g]!==null && d.gpp[g]<80;}).sort(function(a,b){return d.gpp[a]-d.gpp[b];});
     var fort = GPP_ORDER.filter(function(g){return d.gpp[g]!==null;}).sort(function(a,b){return d.gpp[b]-d.gpp[a];}).slice(0,2);
-    var p1 = dkCols(DK_Y0, DK_CH-174, [.8, 1.1, 1.5]), p2 = dkCols(DK_Y0+DK_CH-160, 160, [1]);
-    slides.push({title:'PENC (HABILIDADES BLANDAS)', sub:'Análisis de desempeño · meta 80% · '+periodo, blocks:[
-      dkAt(p1[0], {type:'donut', title:'Resultado general', value:k.penc, meta:80, color:DKC.orange}),
-      dkAt(p1[1], {type:'bar', title:'Evolutivo semanal de PENC (%)', pct:true, meta:80,
-        cats:dMonth.semanal.map(function(w){return w.semana.replace('Semana ','Sem ');}),
-        series:[{name:'PENC', color:DKC.navy, values:dMonth.semanal.map(function(w){return w.penc;})}]}),
-      dkAt(p1[2], {type:'bar', title:'Resultado por dimensión (%)', pct:true, meta:80, cats:GPP_ORDER.map(function(g){return g.slice(0,5)+'.';}),
-        series:[{name:'Dimensión', color:DKC.blue, values:GPP_ORDER.map(function(g){return d.gpp[g];})}]}),
-      dkAt(p2[0], {type:'text', title:'Conclusiones', cols:2, items:[
-        {ic:k.penc!==null&&k.penc>=80?'✔':'▾', t:'PENC total '+pct(k.penc)+': '+(k.penc!==null&&k.penc>=80?'en línea con':'por debajo de')+' el nivel esperado (80%).'},
-        {ic:'🎯', t:'Fortalezas: '+fort.map(function(g){return g+' '+pct(d.gpp[g],0);}).join(' · ')+'.'},
-        {ic:'⚠', t:'Dimensiones bajo 80%: '+(below.length?below.map(function(g){return g+' '+pct(d.gpp[g],0);}).join(' · '):'ninguna')+'.'},
-        {ic:'📋', t:'Priorizar planes de acción en '+(below.slice(0,2).join(' y ')||'las dimensiones con menor resultado')+', con foco en los ítems más impactados.'}]})
-    ]});
-    var pencItems = d.pareto.filter(function(p){return p.bloque==='PENC' && p.pct!==null;}).sort(function(a,b){return a.pct-b.pct;}).slice(0,10);
-    var q1 = dkCols(DK_Y0, DK_CH, [1.25, 1]);
-    var q1b = [dkAt(q1[1], {h:250}), dkAt(q1[1], {y:q1[1].y+264, h:q1[1].h-264})];
+    var pencItems = d.pareto.filter(function(p){return p.bloque==='PENC' && p.pct!==null;}).sort(function(a,b){return a.pct-b.pct;}).slice(0,8);
     var dimCols = [{t:'',a:'l',w:2.3}].concat(GPP_ORDER.map(function(g){return {t:g.slice(0,3),w:1};}));
-    slides.push({title:'PENC · ÍTEMS Y DIMENSIONES', sub:periodo, blocks:[
-      dkAt(q1[0], {type:'hbar', title:'Ítems más impactados en PENC (% de cumplimiento)', pct:true,
-        cats:pencItems.map(function(p){return p.subBloque+' · '+shortItemLabel(p.item);}),
-        series:[{name:'Cumplimiento', color:DKC.orange, values:pencItems.map(function(p){return p.pct;})}]}),
-      dkAt(q1b[0], {type:'table', title:'Por antigüedad (%)', cols:dimCols,
-        rows:dMonth.antiguedad.filter(function(a){return a.q;}).map(function(a){return {c:[a.label].concat(GPP_ORDER.map(function(g){return pct((a.gpp||{})[g],0);}))};})
-          .concat([{total:true, c:['Total'].concat(GPP_ORDER.map(function(g){return pct(d.gpp[g],0);}))}])}),
-      dkAt(q1b[1], {type:'table', title:'Por supervisor (%)', cols:dimCols,
-        rows:admFilterSupervisor(dMonth.supervisor).map(function(s){return {sup:s.nombre, c:[dkShortName(s.nombre)].concat(GPP_ORDER.map(function(g){return pct((s.gpp||{})[g],0);}))};})})
-    ]});
+    var antRows = dMonth.antiguedad.filter(function(a){return a.q;});
+    slides.push({title:'PENC (HABILIDADES BLANDAS) · META 80%', sub:'Análisis de desempeño · '+periodo, blocks:dkLayout([
+      {h:250, blocks:[
+        {fr:.62, type:'donut', title:'Resultado general', value:k.penc, meta:80, color:DKC.orange},
+        {fr:.9, type:'bar', title:'Evolutivo semanal (%)', pct:true, meta:80, cats:weeks,
+          series:[{name:'PENC', color:DKC.navy, values:dMonth.semanal.map(function(w){return w.penc;})}]},
+        {fr:1.45, type:'bar', title:'Resultado por dimensión (%)', pct:true, meta:80, cats:GPP_ORDER.map(function(g){return g.slice(0,5)+'.';}),
+          series:[{name:'Dimensión', color:DKC.blue, values:GPP_ORDER.map(function(g){return d.gpp[g];})}]},
+        {fr:1.05, type:'text', title:'Conclusiones', items:[
+          {ic:k.penc!==null&&k.penc>=80?'✔':'▾', t:'PENC '+pct(k.penc)+': '+(k.penc!==null&&k.penc>=80?'en línea con':'por debajo de')+' la meta.'},
+          {ic:'🎯', t:'Fortalezas: '+fort.map(function(g){return g+' '+pct(d.gpp[g],0);}).join(' · ')+'.'},
+          {ic:'⚠', t:'Bajo 80%: '+(below.length?below.map(function(g){return g+' '+pct(d.gpp[g],0);}).join(' · '):'ninguna')+'.'}]}]},
+      {h:'grow', blocks:[
+        {fr:1.3, type:'hbar', title:'Ítems más impactados (% de cumplimiento)', pct:true,
+          cats:pencItems.map(function(p){return p.subBloque+' · '+shortItemLabel(p.item);}),
+          series:[{name:'Cumplimiento', color:DKC.orange, values:pencItems.map(function(p){return p.pct;})}]},
+        {fr:1, stack:[
+          {h:dkTableH(antRows.length+1), type:'table', title:'Por antigüedad (%)', cols:dimCols,
+            rows:antRows.map(function(a){return {c:[a.label].concat(GPP_ORDER.map(function(g){return pct((a.gpp||{})[g],0);}))};})
+              .concat([{total:true, c:['Total'].concat(GPP_ORDER.map(function(g){return pct(d.gpp[g],0);}))}])},
+          {h:'grow', type:'table', title:'Por supervisor (%)', cols:dimCols,
+            rows:sups.map(function(s){return {sup:s.nombre, c:[dkShortName(s.nombre)].concat(GPP_ORDER.map(function(g){return pct((s.gpp||{})[g],0);}))};})}]}]}
+    ])});
 
-    /* ---- Ranking por supervisor (una o más láminas por supervisor) ---- */
+    /* ---- 6. Ranking: dos columnas de supervisores por lámina ---- */
     var bySup = {};
     dMonth.ejecutivo.forEach(function(x){ var key = x.jefe || 'Sin supervisor'; (bySup[key] = bySup[key] || []).push(x); });
     var supNames = Object.keys(bySup).filter(function(s){return !admSupervisor || s===admSupervisor;});
     var totalCounts = {Q1:0,Q2:0,Q3:0,Q4:0};
-    var rk = dkCols(DK_Y0, DK_CH, [3.1, 1]);
+    var rkCols = [{t:'#',w:.5},{t:'Ejecutivo',a:'l',w:3.7},{t:'Nota',w:.95},{t:'PEC',w:.9},{t:'Q',w:.55},{t:'UF',w:.9},{t:'NEG',w:.9},{t:'CUMP',w:.95},{t:'PENC',w:.95},{t:'C/D',w:.85},{t:'S/E',w:.85},{t:'Cuartil',w:1}];
+    var MIN_PART = 4;                                            // no partir un supervisor en trozos de menos filas
+    var cap = Math.floor((DK_CH - DK_BT - DK_PAD - 20) / 17);    // filas en una columna completa (tabla compacta)
+    var pages = [], page = null;
+    function newPage(){ page = {cols:[[], []], used:[0, 0]}; pages.push(page); }
+    var nCols = supNames.length > 1 ? 2 : 1;
+    function rowsLeft(c){ var u = page.used[c]; return Math.floor((DK_CH - u - (u ? DK_GAP : 0) - DK_BT - DK_PAD - 20) / 17); }
+    // primera columna de la lámina actual donde cabe entero; si no hay, la columna actual (se parte) o una lámina nueva
+    function pickCol(pending){
+      var libre = [0, 1].slice(0, nCols).sort(function(a, b){ return page.used[a] - page.used[b]; });
+      for(var i = 0; i < libre.length; i++) if(rowsLeft(libre[i]) >= pending) return libre[i];
+      if(pending > cap) for(var c2 = 0; c2 < nCols; c2++) if(rowsLeft(c2) >= MIN_PART) return c2;
+      newPage(); return 0;
+    }
+    newPage();
     supNames.forEach(function(sup){
       var execs = bySup[sup].slice().sort(function(a,b){return (b.adherencia||0)-(a.adherencia||0);});
       var counts = {Q1:0,Q2:0,Q3:0,Q4:0};
       execs.forEach(function(x){ counts[x.cuartil]++; totalCounts[x.cuartil]++; });
-      var pages = dkChunk(execs, dkRowsFit(DK_CH));
-      pages.forEach(function(page, pi){
-        slides.push({title:'RANKING DE CALIDAD · '+sup.toUpperCase(), sub:execs.length+' ejecutivos · '+periodo+(pages.length>1?' · parte '+(pi+1)+' de '+pages.length:''), blocks:[
-          dkAt(rk[0], {type:'table', title:'Ejecutivos ordenados por nota final', cols:[{t:'#',w:.45},{t:'Ejecutivo',a:'l',w:3.6},{t:'Nota final',w:1},{t:'PEC',w:.85},{t:'Q',w:.6},{t:'UF',w:.85},{t:'NEG',w:.85},{t:'CUMP',w:.85},{t:'PENC',w:.85},{t:'Cer/Disp',w:.95},{t:'Simp/Emp',w:.95},{t:'Cuartil',w:.85}],
-            rows:page.map(function(x, i){return {qcol:DK_QCOL[x.cuartil], c:[String(pi*pages[0].length+i+1), x.nombre, pct(x.adherencia,0), pct(x.pec,0), n0(x.q), pct(x.pecuf,0), pct(x.pecneg,0), pct(x.peccump,0), pct(x.penc,0), pct(gppPair(x.gpp,'Cercanía','Disposición'),0), pct(gppPair(x.gpp,'Simpleza','Empatía'),0), x.cuartil]};})}),
-          dkAt(rk[1], {type:'donut', title:'Distribución por cuartil', slices:['Q1','Q2','Q3','Q4'].map(function(q){return {name:q, value:counts[q], color:DK_QCOL[q]};}), center:String(execs.length), centerSub:'ejecutivos'})
-        ]});
-      });
+      var done = 0;
+      while(done < execs.length){
+        var pending = execs.length - done, c = pickCol(pending);
+        var take = Math.min(rowsLeft(c), pending);
+        var hh = dkTableH(take, true), u = page.used[c];
+        page.cols[c].push({h:hh, sup:sup, execs:execs.slice(done, done+take), offset:done, n:execs.length, counts:counts, cont:done>0});
+        page.used[c] = u + (u ? DK_GAP : 0) + hh;
+        done += take;
+      }
     });
-    if(!admSupervisor && supNames.length){
-      var g1 = dkCols(DK_Y0, DK_CH, [1, 1.6]);
-      var best = dkConMuestra(dMonth.supervisor).sort(function(a,b){return (b.adherencia||0)-(a.adherencia||0);})[0];
-      var nExec = dMonth.ejecutivo.length;
-      slides.push({title:'RANKING DE CALIDAD · DISTRIBUCIÓN GENERAL', sub:nExec+' ejecutivos evaluados · '+periodo, blocks:[
-        dkAt(g1[0], {type:'donut', title:'Distribución por cuartil — general', slices:['Q1','Q2','Q3','Q4'].map(function(q){return {name:q, value:totalCounts[q], color:DK_QCOL[q]};}), center:String(nExec), centerSub:'ejecutivos'}),
-        dkAt(g1[1], {h:300, type:'table', title:'Cuartiles por supervisor', cols:[{t:'Supervisor',a:'l',w:3},{t:'Ejec.',w:.8},{t:'Q1',w:.7},{t:'Q2',w:.7},{t:'Q3',w:.7},{t:'Q4',w:.7},{t:'Nota',w:.9}],
-          rows:supNames.map(function(s){var c={Q1:0,Q2:0,Q3:0,Q4:0}; bySup[s].forEach(function(x){c[x.cuartil]++;});
-            var sv = dMonth.supervisor.filter(function(x){return x.nombre===s;})[0];
-            return {sup:s, c:[s, n0(bySup[s].length), n0(c.Q1), n0(c.Q2), n0(c.Q3), n0(c.Q4), pct(sv?sv.adherencia:null,0)]};})}),
-        dkAt(g1[1], {y:DK_Y0+314, h:DK_CH-314, type:'text', title:'Conclusiones', items:[
-          {ic:'👥', t:nExec+' ejecutivos evaluados; resultado promedio '+pct(dMonth.kpis.adherencia,0)+'.'},
-          {ic:'🏆', t:best?'Mejor supervisor: '+best.nombre+' ('+pct(best.adherencia,0)+').':'Sin supervisores con datos.'},
-          {ic:'🎯', t:'Fortaleza: PECCUMP '+pct(dMonth.kpis.peccump,0)+' · PECNEG '+pct(dMonth.kpis.pecneg,0)+'.'},
-          {ic:'📋', t:'Reforzar habilidades que impactan en PENC ('+pct(dMonth.kpis.penc,0)+'), con foco en ejecutivos de Q3 y Q4 ('+(totalCounts.Q3+totalCounts.Q4)+').'}]})
-      ]});
+    pages = pages.filter(function(p){ return p.cols[0].length; });
+    var nExec = dMonth.ejecutivo.length, genH = 140;
+    var showGeneral = !admSupervisor && supNames.length > 1;
+    var lastP = pages[pages.length-1];
+    var generalFits = showGeneral && lastP && Math.max(lastP.used[0], lastP.used[1]) + DK_GAP + genH <= DK_CH;
+    var best = dkConMuestra(dMonth.supervisor).sort(function(a,b){return (b.adherencia||0)-(a.adherencia||0);})[0];
+    var generalRow = {h:'grow', blocks:[
+      {fr:.75, type:'donut', title:'Cuartiles — general ('+nExec+' ejecutivos)', slices:['Q1','Q2','Q3','Q4'].map(function(q){return {name:q, value:totalCounts[q], color:DK_QCOL[q]};}), center:String(nExec), centerSub:'ejecutivos'},
+      {fr:1.3, type:'table', title:'Cuartiles por supervisor', cols:[{t:'Supervisor',a:'l',w:3},{t:'Ejec.',w:.8},{t:'Q1',w:.7},{t:'Q2',w:.7},{t:'Q3',w:.7},{t:'Q4',w:.7},{t:'Nota',w:.9}],
+        rows:supNames.map(function(s){var c={Q1:0,Q2:0,Q3:0,Q4:0}; bySup[s].forEach(function(x){c[x.cuartil]++;});
+          var sv = dMonth.supervisor.filter(function(x){return x.nombre===s;})[0];
+          return {sup:s, c:[s, n0(bySup[s].length), n0(c.Q1), n0(c.Q2), n0(c.Q3), n0(c.Q4), pct(sv?sv.adherencia:null,0)]};})},
+      {fr:1.1, type:'text', title:'Conclusiones', items:[
+        {ic:'👥', t:nExec+' ejecutivos evaluados; resultado promedio '+pct(dMonth.kpis.adherencia,0)+'.'},
+        {ic:'🏆', t:best?'Mejor supervisor: '+best.nombre+' ('+pct(best.adherencia,0)+').':'Sin supervisores con datos.'},
+        {ic:'📋', t:'Foco en ejecutivos de Q3 y Q4 ('+(totalCounts.Q3+totalCounts.Q4)+'), reforzando PENC ('+pct(dMonth.kpis.penc,0)+').'}]}]};
+    function rkTable(t){
+      return {h:t.h, type:'table', compact:true, title:dkShortName(t.sup)+(t.cont?' (cont.)':'')+' · '+t.n+' ejec. · Q1 '+t.counts.Q1+' · Q2 '+t.counts.Q2+' · Q3 '+t.counts.Q3+' · Q4 '+t.counts.Q4,
+        cols:rkCols, rows:t.execs.map(function(x, i){return {qcol:DK_QCOL[x.cuartil], c:[String(t.offset+i+1), dkShortName(x.nombre), pct(x.adherencia,0), pct(x.pec,0), n0(x.q), pct(x.pecuf,0), pct(x.pecneg,0), pct(x.peccump,0), pct(x.penc,0), pct(gppPair(x.gpp,'Cercanía','Disposición'),0), pct(gppPair(x.gpp,'Simpleza','Empatía'),0), x.cuartil]};})};
     }
+    pages.forEach(function(p, pi){
+      var withGeneral = generalFits && pi===pages.length-1;
+      var colsUsed = p.cols.filter(function(c){ return c.length; });
+      var rows = [{h:withGeneral ? Math.max(p.used[0], p.used[1]) : 'grow', blocks:colsUsed.map(function(c){
+        return {fr:1, stack:c.map(rkTable).concat([{h:'grow', type:'spacer'}])};
+      })}];
+      if(colsUsed.length===1 && supNames.length>1) rows[0].blocks.push({fr:1, type:'spacer'});
+      if(withGeneral) rows.push(generalRow);
+      slides.push({title:'RANKING DE CALIDAD', sub:'Ejecutivos ordenados por nota final · C/D: Cercanía/Disposición · S/E: Simpleza/Empatía · '+periodo+(pages.length>1?' · '+(pi+1)+' de '+pages.length:''), blocks:dkLayout(rows)});
+    });
+    if(showGeneral && !generalFits)
+      slides.push({title:'RANKING DE CALIDAD · DISTRIBUCIÓN GENERAL', sub:nExec+' ejecutivos evaluados · '+periodo, blocks:dkLayout([generalRow])});
   }
 
-  /* ---- EPA ---- */
+  /* ---- 7. EPA ---- */
   if(e){
     var ke = e.kpis, meta = EPA.cuartil.meta, metaEmp = 73;
-    var e1 = dkCols(DK_Y0, 118, [1]), e2 = dkCols(DK_Y0+132, DK_CH-132, [1, 1.7, 1.05]);
     var sr = admSupervisor ? e.supervisorRanking.filter(function(s){return s.nombre===admSupervisor;}) : e.supervisorRanking;
-    slides.push({title:'EPA '+mesEpa.toUpperCase()+' · FIBRA TÉCNICO', sub:'Encuesta post atención · meta EPA '+meta+'% · meta Empatía '+metaEmp+'%', blocks:[
-      dkAt(e1[0], {type:'kpis', items:[
+    slides.push({title:'EPA '+mesEpa.toUpperCase()+' · FIBRA TÉCNICO', sub:'Encuesta post atención · meta EPA '+meta+'% · meta Empatía '+metaEmp+'%', blocks:dkLayout([
+      {h:112, blocks:[{type:'kpis', items:[
         {label:'EPA general', value:pct(ke.epaGeneral,1), sub:'Meta '+meta+'% · '+dkDelta(ke.epaGeneral===null?null:ke.epaGeneral-meta), color:ke.epaGeneral!==null&&ke.epaGeneral>=meta?DKC.green:DKC.red},
         {label:'Empatía', value:pct(ke.empatia,1), sub:'Meta '+metaEmp+'% · '+dkDelta(ke.empatia===null?null:ke.empatia-metaEmp), color:ke.empatia!==null&&ke.empatia>=metaEmp?DKC.green:DKC.red},
         {label:'Esfuerzo', value:pct(ke.esfuerzo,1), color:DKC.purple},
         {label:'Encuestas', value:n0(ke.qEncuestas), color:DKC.blue},
-        {label:'Insatisfechos', value:n0(e.insatTotal), sub:ke.qEncuestas?pct(e.insatTotal/ke.qEncuestas*100,1)+' del total':'', color:DKC.orange}]}),
-      dkAt(e2[0], {type:'bar', title:'Evolutivo semanal EPA (%)', pct:true, meta:meta, neg:true,
-        cats:e.evolSemanal.map(function(w){return w.semana;}),
-        series:[{name:'EPA', color:DKC.blue, values:e.evolSemanal.map(function(w){return w.epa;})}]}),
-      dkAt(e2[1], {type:'combo', title:'Evolutivo por día — EPA y Empatía (%)', pct:true,
-        cats:e.evolDiaria.map(function(r){return r.dia;}),
-        bars:{name:'EPA', color:DKC.blue, values:e.evolDiaria.map(function(r){return r.epa;})},
-        line:{name:'Empatía', color:DKC.purple, values:e.evolDiaria.map(function(r){return r.empatia;})}}),
-      dkAt(e2[2], {type:'table', title:'Por supervisor', cols:[{t:'Supervisor',a:'l',w:2.3},{t:'EPA',w:1},{t:'Q',w:.8},{t:'Emp.',w:1}],
-        rows:sr.map(function(s){return {sup:s.nombre, c:[dkShortName(s.nombre), pct(s.global,0), n0(s.q), pct(s.empatia,0)]};})})
-    ]});
+        {label:'Insatisfechos', value:n0(e.insatTotal), sub:ke.qEncuestas?pct(e.insatTotal/ke.qEncuestas*100,1)+' del total':'', color:DKC.orange}]}]},
+      {h:'grow', blocks:[
+        {fr:.85, type:'bar', title:'Evolutivo semanal EPA (%)', pct:true, meta:meta, neg:true,
+          cats:e.evolSemanal.map(function(w){return w.semana;}),
+          series:[{name:'EPA', color:DKC.blue, values:e.evolSemanal.map(function(w){return w.epa;})}]},
+        {fr:1.75, type:'combo', title:'Evolutivo por día — EPA y Empatía (%)', pct:true,
+          cats:e.evolDiaria.map(function(r){return r.dia;}),
+          bars:{name:'EPA', color:DKC.blue, values:e.evolDiaria.map(function(r){return r.epa;})},
+          line:{name:'Empatía', color:DKC.purple, values:e.evolDiaria.map(function(r){return r.empatia;})}},
+        {fr:1, type:'table', title:'Por supervisor', cols:[{t:'Supervisor',a:'l',w:2.6},{t:'EPA',w:1},{t:'Q',w:.8},{t:'Emp.',w:1}],
+          rows:sr.map(function(s){return {sup:s.nombre, c:[dkShortName(s.nombre), pct(s.global,0), n0(s.q), pct(s.empatia,0)]};})}]}
+    ])});
 
-    var f1 = dkCols(DK_Y0, DK_CH, [1, 1.6]);
-    var fl = [dkAt(f1[0], {h:250}), dkAt(f1[0], {y:DK_Y0+264, h:DK_CH-264})];
     var idxE = EPA.months.findIndex(function(m){return m.key===admMonthEpa;});
     var tri = EPA.evolMensual.slice(Math.max(0,idxE-2), idxE+1);
     var frRows = [];
@@ -2449,22 +2515,21 @@ function admBuildDeck(){
       frRows.push({bold:true, c:[titleCase(f.frente)].concat(WEEKS_EPA.map(function(w){return n0((f.semanas||{})[w]||0);})).concat([n0(f.q), pct(f.pct,1)])});
       f.subs.forEach(function(s){ frRows.push({indent:true, c:['  '+titleCase(s.sub)].concat(WEEKS_EPA.map(function(w){return n0((s.semanas||{})[w]||0);})).concat([n0(s.q), pct(s.pct,1)])}); });
     });
-    var frPages = dkChunk(frRows, dkRowsFit(DK_CH));
     var causas = e.frenteShareInsat.slice().sort(function(a,b){return (b.q||0)-(a.q||0);});
+    var frCols = [{t:'Frente / sub motivo',a:'l',w:4}].concat(WEEKS_EPA.map(function(w){return {t:w.replace('Sem','S'),w:.6};})).concat([{t:'Total',w:.7},{t:'%',w:.8}]);
+    var frPages = dkChunk(frRows, Math.floor((DK_CH - DK_BT - DK_PAD - 24) / 21));
     frPages.forEach(function(page, pi){
-      var blocks = [];
-      if(pi===0){
-        blocks.push(dkAt(fl[0], {type:'table', title:'Análisis de insatisfechos por causa raíz', cols:[{t:'Causa raíz',a:'l',w:2.4},{t:'Q',w:.7},{t:'%',w:.9}],
-          rows:causas.map(function(f){return {c:[titleCase(f.frente), n0(f.q), pct(f.pct,1)]};})
-            .concat([{total:true, c:['Total con causa', n0(causas.reduce(function(s,f){return s+(f.q||0);},0)), '']}])}));
-        blocks.push(dkAt(fl[1], {type:'line', title:'Tendencia trimestral (%)', pct:true, legend:true,
-          cats:tri.map(function(m){return m.label.split(' ')[0];}),
-          series:[{name:'EPA', color:DKC.blue, values:tri.map(function(m){return m.epa;})}, {name:'Empatía', color:DKC.purple, values:tri.map(function(m){return m.empatia;})}]}));
-      }
-      blocks.push(dkAt(pi===0 ? f1[1] : dkCols(DK_Y0, DK_CH, [1])[0], {type:'table', title:'Detalle de insatisfacciones por frente y sub motivo (por semana)',
-        cols:[{t:'Frente / sub motivo',a:'l',w:4}].concat(WEEKS_EPA.map(function(w){return {t:w.replace('Sem','S'),w:.6};})).concat([{t:'Total',w:.7},{t:'%',w:.8}]),
-        rows:page.length ? page : [{c:['Sin insatisfacciones registradas','','','','','','']}]}));
-      slides.push({title:'EPA · INSATISFECHOS', sub:n0(e.insatTotal)+' encuestas insatisfechas · '+mesEpa+(frPages.length>1?' · parte '+(pi+1)+' de '+frPages.length:''), blocks:blocks});
+      var detalle = {fr:1.65, type:'table', title:'Insatisfacciones por frente y sub motivo (por semana)'+(pi?' (cont.)':''), cols:frCols,
+        rows:page.length ? page : [{c:['Sin insatisfacciones registradas','','','','','','']}]};
+      var rows = pi===0 ? [{h:'grow', blocks:[{fr:1, stack:[
+          {h:dkTableH(causas.length+1), type:'table', title:'Insatisfechos por causa raíz', cols:[{t:'Causa raíz',a:'l',w:2.4},{t:'Q',w:.7},{t:'%',w:.9}],
+            rows:causas.map(function(f){return {c:[titleCase(f.frente), n0(f.q), pct(f.pct,1)]};})
+              .concat([{total:true, c:['Total con causa', n0(causas.reduce(function(s,f){return s+(f.q||0);},0)), '']}])},
+          {h:'grow', type:'line', title:'Tendencia trimestral (%)', pct:true, legend:true,
+            cats:tri.map(function(m){return m.label.split(' ')[0];}),
+            series:[{name:'EPA', color:DKC.blue, values:tri.map(function(m){return m.epa;})}, {name:'Empatía', color:DKC.purple, values:tri.map(function(m){return m.empatia;})}]}]},
+        detalle]}] : [{h:'grow', blocks:[detalle]}];
+      slides.push({title:'EPA · INSATISFECHOS', sub:n0(e.insatTotal)+' encuestas insatisfechas · '+mesEpa+(frPages.length>1?' · '+(pi+1)+' de '+frPages.length:''), blocks:dkLayout(rows)});
     });
   }
 
@@ -2522,10 +2587,11 @@ function dkSvgBars(b, w, h){
 function dkSvgHBars(b, w, h){
   var vals = b.series[0].values;
   if(!b.cats.length) return dkEmpty(w, h);
-  var lw = w*.48, bwMax = w - lw - 50, rh = h / b.cats.length, bh = Math.min(22, rh*.62);
+  var lw = w*.48, bwMax = w - lw - 50, rh = Math.min(h / b.cats.length, DK_HBAR_ROW), bh = Math.min(22, rh*.62);
+  var y0 = (h - rh*b.cats.length) / 2;
   var max = b.pct ? 100 : Math.max.apply(null, vals.concat([1])), out = [];
   b.cats.forEach(function(c, i){
-    var yc = rh*i + rh/2, v = vals[i] || 0, bw = bwMax*v/max, col = b.series[0].color;
+    var yc = y0 + rh*i + rh/2, v = vals[i] || 0, bw = bwMax*v/max, col = b.series[0].color;
     var label = c.length > 46 ? c.slice(0,45)+'…' : c;
     out.push(dkTxt(lw-8, yc+4, label, {anchor:'end', size:10.5, color:DKC.ink}));
     out.push('<rect x="'+lw+'" y="'+(yc-bh/2).toFixed(1)+'" width="'+bwMax.toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="3" fill="#'+DKC.track+'"/>');
@@ -2569,10 +2635,12 @@ function dkArc(cx, cy, r, a0, a1){
   return 'M'+x0.toFixed(2)+' '+y0.toFixed(2)+' A'+r+' '+r+' 0 '+(a1-a0>Math.PI?1:0)+' 1 '+x1.toFixed(2)+' '+y1.toFixed(2);
 }
 function dkSvgDonut(b, w, h){
-  var vert = b.slices && w < 420, nL = b.slices ? b.slices.length : 0;
-  var out = [], legendH = b.slices ? (vert ? nL*22 + 6 : 0) : 34;
-  var size = Math.min(b.slices && !vert ? w*.54 : w, h - legendH);
-  var cx = b.slices && !vert ? size/2 + 4 : w/2, cy = vert ? size/2 : (h - legendH)/2, r = size/2 - 14, sw = Math.max(14, r*.32);
+  var nL = b.slices ? b.slices.length : 0, vert = b.slices && w < 420 && h - nL*22 > 130;
+  var out = [], legendH = b.slices ? (vert ? nL*22 + 6 : 0) : 38;
+  var size = Math.min(b.slices && !vert ? w*.54 : w, h - legendH, DK_DONUT_MAX);
+  var top = (h - size - legendH) / 2;                   // el grupo (anillo + leyenda) queda centrado
+  var cx = b.slices && !vert ? size/2 + 4 : w/2, cy = (b.slices && !vert) ? h/2 : top + size/2;
+  var sw = Math.max(10, size*.14), r = size/2 - sw/2 - 2;   // el trazo no sale del recuadro
   out.push('<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#'+DKC.track+'" stroke-width="'+sw+'"/>');
   if(b.slices){
     var tot = b.slices.reduce(function(s,x){return s+x.value;},0), a = 0;
@@ -2585,7 +2653,7 @@ function dkSvgDonut(b, w, h){
     });
     out.push(dkTxt(cx, cy+4, b.center, {size:Math.round(r*.42), bold:true}));
     out.push(dkTxt(cx, cy+4+r*.3, b.centerSub||'', {size:10, color:DKC.dim}));
-    var lx = vert ? w/2 - 70 : size + 18, ly = vert ? size + 4 : cy - nL*24/2, step = vert ? 22 : 24;
+    var lx = vert ? w/2 - 70 : size + 18, ly = vert ? top + size + 4 : cy - nL*24/2, step = vert ? 22 : 24;
     b.slices.forEach(function(sl, i){
       var yy = ly + i*step + 12;
       out.push('<rect x="'+lx+'" y="'+(yy-10)+'" width="12" height="12" rx="3" fill="#'+sl.color+'"/>');
@@ -2598,17 +2666,17 @@ function dkSvgDonut(b, w, h){
       out.push(v>=100 ? '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#'+b.color+'" stroke-width="'+sw+'"/>'
                       : '<path d="'+dkArc(cx, cy, r, 0, Math.max(0.01, a1))+'" fill="none" stroke="#'+b.color+'" stroke-width="'+sw+'" stroke-linecap="round"/>');
     }
-    out.push(dkTxt(cx, cy+r*.17, pct(v,1), {size:Math.round(r*.44), bold:true}));
-    var ok = v!==null && v>=b.meta;
-    out.push(dkTxt(w/2, h-18, 'Meta '+b.meta+'%', {size:11, color:DKC.dim}));
-    out.push(dkTxt(w/2, h-2, v===null ? 'sin datos' : (ok?'▲ ':'▼ ')+dkDelta(v-b.meta)+' vs meta', {size:11.5, bold:true, color:ok?DKC.green:DKC.red}));
+    out.push(dkTxt(cx, cy+r*.17, pct(v,1), {size:Math.round(r*.46), bold:true}));
+    var ok = v!==null && v>=b.meta, ty = top + size;
+    out.push(dkTxt(w/2, ty+15, 'Meta '+b.meta+'%', {size:11, color:DKC.dim}));
+    out.push(dkTxt(w/2, ty+32, v===null ? 'sin datos' : (ok?'▲ ':'▼ ')+dkDelta(v-b.meta)+' vs meta', {size:11.5, bold:true, color:ok?DKC.green:DKC.red}));
   }
   return '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'">'+out.join('')+'</svg>';
 }
 function dkEmpty(w, h){ return '<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'">'+dkTxt(w/2, h/2, 'Sin datos en el periodo', {size:12, color:DKC.grey})+'</svg>'; }
 function dkHtmlTable(b){
   var wsum = b.cols.reduce(function(s, c){ return s+c.w; }, 0);
-  return '<div class="dk-fit"><div class="dk-fi"><table class="dk-tb"><colgroup>'+b.cols.map(function(c){return '<col style="width:'+(c.w/wsum*100).toFixed(2)+'%">';}).join('')+'</colgroup>'+
+  return '<div class="dk-fit"><div class="dk-fi"><table class="dk-tb'+(b.compact?' sm':'')+'"><colgroup>'+b.cols.map(function(c){return '<col style="width:'+(c.w/wsum*100).toFixed(2)+'%">';}).join('')+'</colgroup>'+
     '<thead><tr>'+b.cols.map(function(c){return '<th class="'+(c.a==='l'?'l':'')+'">'+esc(c.t)+'</th>';}).join('')+'</tr></thead><tbody>'+
     b.rows.map(function(r){
       var cls = (r.total?'tot ':'')+(r.bold?'grp ':'')+(r.sup?'sup '+(admSupervisor===r.sup?'on ':''):'');
@@ -2619,6 +2687,7 @@ function dkHtmlTable(b){
     }).join('')+'</tbody></table></div></div>';
 }
 function dkHtmlBlock(b){
+  if(b.type==='spacer') return '';
   var cw = b.w - 2*DK_PAD, ch = b.h - DK_BT - DK_PAD, body;
   if(b.type==='kpis'){
     return '<div class="dk-kpis" style="left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;">'+b.items.map(function(it){
@@ -2638,17 +2707,11 @@ function dkHtmlBlock(b){
 function dkContext(){
   return 'Mesas Técnicas · N1 Voz · A365 · Adherencia '+adhMonthLabelFor(admMonthAdh)+(admSemanaLabel()?' '+admSemanaLabel():'')+' · EPA '+epaMonthLabelForAdmin(admMonthEpa);
 }
+// En pantalla no se muestran la portada ni el cierre (solo van en el PowerPoint)
 function dkHtmlSlide(s, i, n){
-  var inner;
-  if(s.cover){
-    inner = '<div class="dk-cover"><img src="'+dkLogo()+'" alt="Entel"><h1>'+esc(s.title)+'</h1><h3>'+esc(s.sub)+'</h3><p>'+esc(s.period)+'</p></div>';
-  } else if(s.end){
-    inner = '<div class="dk-end"><img src="'+dkLogo()+'" alt="Entel"><h1>GRACIAS</h1><p>Gerencia de Calidad · A365</p></div>';
-  } else {
-    inner = '<div class="dk-hd"><h2>'+esc(s.title)+'</h2><img src="'+dkLogo()+'" alt="Entel"></div><div class="dk-sub">'+esc(s.sub||'')+'</div>'+
-      s.blocks.map(dkHtmlBlock).join('');
-  }
-  return '<div class="dk-stage"><section class="dk-slide'+(s.cover||s.end?' dark':'')+'">'+inner+
+  var inner = '<div class="dk-hd"><h2>'+esc(s.title)+'</h2><img src="'+dkLogo()+'" alt="Entel"></div><div class="dk-sub">'+esc(s.sub||'')+'</div>'+
+    s.blocks.map(dkHtmlBlock).join('');
+  return '<div class="dk-stage"><section class="dk-slide">'+inner+
     '<div class="dk-ft"><span class="dk-seg"><i></i><i></i><i></i></span><span class="dk-rule"></span><span class="dk-ctx">'+esc(dkContext())+'</span><span class="dk-num">'+(i+1)+' / '+n+'</span></div>'+
     '</section><button class="dk-xp" type="button" data-p="'+i+'" title="Presentar desde esta lámina">⤢</button></div>';
 }
@@ -2670,8 +2733,8 @@ function dkFitTables(){
 }
 function renderAdmin(){
   ADM_DECK = admBuildDeck();
-  var n = ADM_DECK.length;
-  $('adm-deck').innerHTML = ADM_DECK.map(function(s, i){ return dkHtmlSlide(s, i, n); }).join('');
+  var vis = ADM_DECK.filter(function(s){ return !s.cover && !s.end; });
+  $('adm-deck').innerHTML = vis.map(function(s, i){ return dkHtmlSlide(s, i, vis.length); }).join('');
   dkScaleAll(); dkFitTables();
   $('adm-deck').querySelectorAll('tr[data-sup]').forEach(function(tr){
     tr.addEventListener('click', function(){
@@ -2750,7 +2813,7 @@ function dkPptFrame(pptx, s, i, n, logo){
   }
   sl.background = {color:'FFFFFF'};
   var fsT = s.title.length > 52 ? 16 : (s.title.length > 40 ? 18 : 21);
-  var tw = Math.min(1110, 48 + s.title.length*fsT*0.62/0.75);   // px: caracteres x ancho medio (pt -> px)
+  var tw = Math.min(1110, 56 + s.title.length*fsT*0.72/0.75);   // px: caracteres x ancho medio en mayúsculas (pt -> px)
   sl.addText(s.title, dkObj(dkPos(0, 14, tw, 50), {fontFace:'Arial', fontSize:fsT, bold:true, color:'FFFFFF',
     fill:{color:DKC.blue}, valign:'middle', margin:[0, 6, 0, 18], wrap:false}));
   sl.addShape(pptx.ShapeType.rect, dkObj(dkPos(tw, 14, 10, 50), {fill:{color:DKC.orange}, line:{color:DKC.orange, width:0}}));
@@ -2774,6 +2837,7 @@ function dkPptChartBase(b, cx, cy, cw, ch){
   });
 }
 function dkPptBlock(pptx, sl, b){
+  if(b.type==='spacer') return;
   var cx = b.x + DK_PAD, cy = b.y + DK_BT, cw = b.w - 2*DK_PAD, ch = b.h - DK_BT - DK_PAD;
   var fmt = b.count ? '0' : (b.pct ? '0.0"%"' : '0.0');
   if(b.type==='kpis'){
@@ -2797,6 +2861,7 @@ function dkPptBlock(pptx, sl, b){
     var cats = b.cats.filter(function(_, i){ return keep[i]; });
     if(!cats.length){ dkPptEmpty(sl, cx, cy, cw, ch); return; }
     var horiz = b.type==='hbar';
+    if(horiz){ var hh = Math.min(ch, cats.length*DK_HBAR_ROW + 16); cy += (ch - hh)/2; ch = hh; }
     var data = b.series.map(function(se){ return {name:se.name, labels:horiz?cats.slice().reverse():cats,
       values:se.values.filter(function(_, i){ return keep[i]; }).map(function(v){ return v===null?0:v; })}; });
     if(horiz) data.forEach(function(dd){ dd.values.reverse(); });
@@ -2843,9 +2908,9 @@ function dkPptBlock(pptx, sl, b){
   if(b.type==='donut'){
     if(b.slices){
       var tot = b.slices.reduce(function(s, x){ return s+x.value; }, 0);
-      var vert = cw < 420, nL = b.slices.length, step = vert ? 22 : 24;
-      var dw = vert ? Math.min(cw, ch - nL*step - 6) : Math.min(cw*.54, ch);
-      var dx = vert ? cx + (cw-dw)/2 : cx, dy = vert ? cy : cy + (ch-dw)/2;
+      var nL = b.slices.length, vert = cw < 420 && ch - nL*22 > 130, step = vert ? 22 : 24;
+      var dw = Math.min(vert ? cw : cw*.54, vert ? ch - nL*step - 6 : ch, DK_DONUT_MAX);
+      var dx = vert ? cx + (cw-dw)/2 : cx, dy = vert ? cy + (ch - dw - nL*step - 6)/2 : cy + (ch-dw)/2;
       sl.addChart(pptx.ChartType.doughnut, [{name:'Cuartiles', labels:b.slices.map(function(x){ return x.name; }), values:b.slices.map(function(x){ return x.value; })}],
         dkObj(dkPos(dx, dy, dw, dw), {holeSize:58, chartColors:b.slices.map(function(x){ return x.color; }), showLegend:false, showValue:false, showPercent:false}));
       sl.addText([{text:b.center, options:{fontSize:20, bold:true, color:DKC.ink, breakLine:true}}, {text:b.centerSub||'', options:{fontSize:9, color:DKC.dim}}],
@@ -2856,21 +2921,31 @@ function dkPptBlock(pptx, sl, b){
         sl.addText(x.name+': '+x.value+' ('+(tot?(x.value/tot*100).toFixed(1):'0.0')+'%)', dkObj(dkPos(lx+18, ly+i*step, Math.max(150, cw-(lx-cx)-18), 20), {fontFace:'Arial', fontSize:10.5, color:DKC.ink, wrap:false}));
       });
     } else {
-      var v = b.value, legendH = 38, ds = Math.min(cw, ch - legendH);
-      var ok = v!==null && v>=b.meta;
+      var v = b.value, legendH = 38, ds = Math.min(cw, ch - legendH, DK_DONUT_MAX);
+      var ok = v!==null && v>=b.meta, dy = cy + (ch - ds - legendH)/2;
       sl.addChart(pptx.ChartType.doughnut, [{name:'Resultado', labels:['Resultado', 'Brecha'], values:v===null?[0, 100]:[Math.max(0, Math.min(100, v)), Math.max(0, 100-v)]}],
-        dkObj(dkPos(cx+(cw-ds)/2, cy, ds, ds), {holeSize:68, chartColors:[b.color, DKC.track], showLegend:false, showValue:false, showPercent:false}));
-      sl.addText(pct(v, 1), dkObj(dkPos(cx, cy+ds/2-22, cw, 44), {fontFace:'Arial', fontSize:24, bold:true, color:DKC.ink, align:'center', valign:'middle'}));
+        dkObj(dkPos(cx+(cw-ds)/2, dy, ds, ds), {holeSize:68, chartColors:[b.color, DKC.track], showLegend:false, showValue:false, showPercent:false}));
+      sl.addText(pct(v, 1), dkObj(dkPos(cx, dy+ds/2-22, cw, 44), {fontFace:'Arial', fontSize:ds>170?24:19, bold:true, color:DKC.ink, align:'center', valign:'middle'}));
       sl.addText([{text:'Meta '+b.meta+'%', options:{color:DKC.dim, breakLine:true}},
                   {text:v===null?'sin datos':(ok?'▲ ':'▼ ')+dkDelta(v-b.meta)+' vs meta', options:{bold:true, color:ok?DKC.green:DKC.red}}],
-        dkObj(dkPos(cx, cy+ch-legendH, cw, legendH), {fontFace:'Arial', fontSize:10.5, align:'center'}));
+        dkObj(dkPos(cx, dy+ds, cw, legendH), {fontFace:'Arial', fontSize:10.5, align:'center'}));
     }
     return;
   }
   if(b.type==='table'){
-    var rowsN = b.rows.length + 1, rowH = Math.min(24, (ch-2)/rowsN), fs = Math.max(6.5, Math.min(10.5, rowH*.5));
+    // En PowerPoint el texto que no cabe se parte en dos líneas y la fila crece; para que la
+    // tabla respete su recuadro se acorta el texto largo y se ajusta la letra de cada encabezado.
+    var rowsN = b.rows.length + 1, rowH = Math.min(24, (ch-2)/rowsN);
+    var fs = Math.max(6, Math.min(b.compact ? 7 : 10, rowH*.48));
     var wsum = b.cols.reduce(function(s, c){ return s+c.w; }, 0);
-    var head = b.cols.map(function(c){ return {text:c.t, options:{bold:true, color:'FFFFFF', fill:{color:DKC.navy}, align:c.a==='l'?'left':'center'}}; });
+    var colPx = b.cols.map(function(c){ return cw*c.w/wsum; });
+    var pad = b.compact ? 2 : 4;
+    var caben = function(i, size){ return Math.max(2, Math.floor((colPx[i] - 2*pad - 2) / (size/0.75*0.72))); };   // ancho medio de mayúsculas en Arial
+    var corta = function(txt, n){ txt = String(txt===null||txt===undefined?'':txt); return txt.length > n ? txt.slice(0, Math.max(1, n-1))+'…' : txt; };
+    var head = b.cols.map(function(c, i){
+      var fh = Math.min(fs, (colPx[i] - 2*pad - 2)*0.75 / (Math.max(1, c.t.length)*0.66));
+      return {text:c.t, options:{bold:true, color:'FFFFFF', fill:{color:DKC.navy}, align:c.a==='l'?'left':'center', fontSize:Math.max(5, Math.round(fh*2)/2)}};
+    });
     var body = b.rows.map(function(r){
       return r.c.map(function(v, i){
         var o = {align:b.cols[i] && b.cols[i].a==='l'?'left':'center', color:DKC.ink};
@@ -2878,11 +2953,12 @@ function dkPptBlock(pptx, sl, b){
         if(r.bold){ o.bold = true; o.color = DKC.navy; o.fill = {color:DKC.soft}; }
         if(r.indent){ o.color = DKC.dim; }
         if(r.qcol && i===r.c.length-1){ o.bold = true; o.color = 'FFFFFF'; o.fill = {color:r.qcol}; }
-        return {text:String(v===null||v===undefined?'':v), options:o};
+        var txt = (b.cols[i] && b.cols[i].a==='l') ? corta(v, caben(i, fs)) : String(v===null||v===undefined?'':v);  // solo se acortan textos
+        return {text:txt, options:o};
       });
     });
-    sl.addTable([head].concat(body), dkObj(dkPos(cx, cy, cw, rowH*rowsN), {fontFace:'Arial', fontSize:fs, rowH:dkI(rowH), margin:[1, 4, 1, 4], valign:'middle',
-      colW:b.cols.map(function(c){ return dkI(cw*c.w/wsum); }), border:{type:'solid', pt:0.5, color:'D5DDEA'}, autoPage:false}));
+    sl.addTable([head].concat(body), dkObj(dkPos(cx, cy, cw, rowH*rowsN), {fontFace:'Arial', fontSize:fs, rowH:dkI(rowH), margin:[0.01, dkI(pad), 0.01, dkI(pad)], valign:'middle',   // en pulgadas (con 0 delante la librería no los toma como puntos)
+      colW:colPx.map(function(w){ return dkI(w); }), border:{type:'solid', pt:0.5, color:'D5DDEA'}, autoPage:false}));
     return;
   }
   if(b.type==='text'){
@@ -2985,6 +3061,7 @@ function tryAdminUnlock(){
     $('adm-pass-error').textContent = 'Contraseña incorrecta';
   }
 }
+
 
 
 
