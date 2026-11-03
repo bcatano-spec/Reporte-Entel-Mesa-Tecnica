@@ -256,6 +256,28 @@
   footer.app-footer .fmore{color:var(--blue);font-weight:600;}
 
   /* ---------- MODAL ---------- */
+  /* Avance de asesores evaluados vs. dotación */
+  .kpi-ase{display:block;flex-basis:100%;margin-top:3px;color:var(--text-dim);cursor:pointer;font-size:11.5px;}
+  .kpi-ase b{color:var(--blue);}
+  .kpi-ase:hover{text-decoration:underline;}
+  .kpi-click{cursor:pointer;}
+  .kpi-click:hover{color:var(--blue);}
+  #ase-modal .modal-panel{max-width:1100px;width:100%;}
+  .ase-bar{border-radius:4px;background:#edf1f7;overflow:hidden;}
+  .ase-bar>div{height:100%;border-radius:4px;}
+  .av-wrap{display:grid;grid-template-columns:1fr 1.3fr;gap:18px;align-items:start;margin-top:10px;}
+  .av-total,.av-antig{border:1px solid #e1e7f0;border-radius:12px;padding:14px 16px;}
+  .av-lbl{font-size:10.5px;font-weight:800;text-transform:uppercase;color:#94a3b8;letter-spacing:.3px;margin-bottom:8px;}
+  .av-num{font-size:15px;color:var(--text-dim);margin-bottom:8px;}
+  .av-num b{font-size:26px;color:#1c2b45;}
+  .av-num span{font-size:22px;font-weight:800;margin-left:6px;}
+  .av-sub{font-size:12px;color:var(--text-dim);margin-top:8px;}
+  .av-row{display:grid;grid-template-columns:110px 1fr 58px 42px 64px;gap:10px;align-items:center;font-size:12.5px;padding:5px 0;}
+  .av-tr{font-weight:700;} .av-n,.av-p{text-align:right;} .av-p{font-weight:800;} .av-f{font-size:11px;color:#94a3b8;}
+  .ase-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+  .ase-tbl th{font-size:10px;font-weight:800;text-transform:uppercase;color:#94a3b8;text-align:left;padding:5px 6px;border-bottom:1px solid #e1e7f0;position:sticky;top:0;background:#fff;}
+  .ase-tbl td{padding:5px 6px;border-bottom:1px solid #edf1f7;}
+  @media (max-width:900px){ .av-wrap{grid-template-columns:1fr;} }
   .modal-overlay{position:fixed;inset:0;background:rgba(15,25,45,.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:24px;}
   .modal-overlay.hidden{display:none;}
   .modal-panel{background:var(--bg-panel);border-radius:16px;max-width:820px;width:100%;max-height:88vh;overflow-y:auto;padding:26px 28px 30px;position:relative;box-shadow:0 30px 60px -12px rgba(10,20,40,.35);}
@@ -683,7 +705,7 @@ body.pres-open{overflow:hidden;}
     <section class="kpis kpis-6" id="adh-sec-kpis">
       <div class="kpi-card">
         <div class="kpi-top"><div class="kpi-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8 13h8M8 17h5"/></svg></div><div class="kpi-label">Total<br>Evaluaciones</div></div>
-        <div class="kpi-value" id="kpi-adh-total">–</div>
+        <div class="kpi-value kpi-click" id="kpi-adh-total" title="Ver avance de asesores evaluados">–</div>
         <div class="kpi-delta flat" id="kpi-adh-total-caption">casos en el mes seleccionado</div>
       </div>
       <div class="kpi-card">
@@ -1474,6 +1496,16 @@ body.pres-open{overflow:hidden;}
 <!-- /page-perf -->
 
 
+<!-- Avance de asesores evaluados vs. dotación -->
+<div class="modal-overlay hidden" id="ase-modal">
+  <div class="modal-panel">
+    <button class="modal-close" id="ase-modal-close" type="button">✕</button>
+    <div class="modal-title">Avance de asesores evaluados</div>
+    <div class="modal-sub" id="ase-modal-sub"></div>
+    <div id="ase-modal-body"></div>
+  </div>
+</div>
+
 <!-- Detail modal: Adherencia row -->
 <div class="modal-overlay hidden" id="adh-modal">
   <div class="modal-panel">
@@ -1560,6 +1592,7 @@ function decompress(b64){
   return JSON.parse(json);
 }
 const ADH = decompress(ADH_B64);
+var DOTACION_EJEC = {"archivo":"DOTACION_A365_MLUYO_03-11-2026.xlsx","filas":[{"n":"MADALI HIGINIA DE LA CRUZ PADILLA","j":"MARIANA CONSUELO APONTE ALVARADO","h":"BACK HOGAR FIBRA TECNICO","i":"2025-02-06","o":"2025-01-06","s":"OPERACION","e":"Activo","c":null},{"n":"CARLOS MANUEL VALVERDE LOPEZ","j":"MARIANA CONSUELO APONTE ALVARADO","h":"BACK HOGAR FIBRA TECNICO","i":"2026-07-01","o":"2024-11-01","s":"OPERACION","e":"Activo","c":null},{"n":"JEAN PIER JEFERSON DE LA ROSA QUEZADA","j":"MARIANA CONSUELO APONTE ALVARADO","h":"BACK HOGAR FIBRA TECNICO","i":"2025-08-29","o":"2025-08-12","s":"OPERACION","e":"Cesado","c":"2026-10-31"},{"n":"CRISTINA YULIANA TRUJILLO RUIZ","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2025-09-11","o":"2025-08-12","s":"OPERACION","e":"Activo","c":null},{"n":"ELIZABETH ESTHER BENITES BARRIENTOS","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2025-09-11","o":"2025-08-12","s":"OPERACION","e":"Activo","c":null},{"n":"STACY KIMBERLY YANCUL PINGO","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2025-10-23","o":"2025-09-23","s":"OPERACION","e":"Activo","c":null},{"n":"JOSE EDUARDO QUESQUEN MELO","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2025-12-03","o":"2025-11-03","s":"OPERACION","e":"Activo","c":null},{"n":"VANIA MACIEL SANDOVAL MANYARI","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-05-01","o":"2026-04-01","s":"OPERACION","e":"Activo","c":null},{"n":"JOSE GABRIEL SANCHEZ REQUENA","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-05-01","o":"2026-04-01","s":"OPERACION","e":"Cesado","c":"2026-10-23"},{"n":"JOEL SAMUEL GRANADO RONDON","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-06-02","o":"2026-05-02","s":"OPERACION","e":"Cesado","c":"2026-09-09"},{"n":"ENZO JOAQUIN LIMAY GALLO","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-06-02","o":"2026-05-02","s":"OPERACION","e":"Activo","c":null},{"n":"LUIS ALEXANDER NAZARIO ZAVALETA","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-06-25","o":"2026-05-25","s":"OPERACION","e":"Activo","c":null},{"n":"JORGE ABRAHAM MORENO SAAVEDRA","j":"MARIANA CONSUELO APONTE ALVARADO","h":"BACK HOGAR FIBRA TECNICO","i":"2026-09-01","o":"2026-05-25","s":"OPERACION","e":"Activo","c":null},{"n":"LUCAS RODRIGO GUZMAN PEREZ","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-06-25","o":"2026-05-25","s":"OPERACION","e":"Activo","c":null},{"n":"FATIMA JIMENA LIMO PEREIRA","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-07-09","o":"2026-06-09","s":"OPERACION","e":"Activo","c":null},{"n":"DIEGO SEBASTIAN PHILIPPS RUIZ","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-07-09","o":"2026-06-09","s":"OPERACION","e":"Activo","c":null},{"n":"JUAN CARLOS ESPINOZA ESPINOZA","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-07-09","o":"2026-06-09","s":"OPERACION","e":"Activo","c":null},{"n":"MARCOS ANTONIO CONTRERAS CORNEJO","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-07-25","o":"2026-06-25","s":"OPERACION","e":"Activo","c":null},{"n":"SHEILA DESIREE GARCIA CHACON","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-07-25","o":"2026-06-25","s":"OPERACION","e":"Activo","c":null},{"n":"LAURA CARDENAS URETA","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-07-25","o":"2026-06-25","s":"OPERACION","e":"Activo","c":null},{"n":"SEBASTIAN MARINO JUNIOR SEGURA MACHACA","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-07-25","o":"2026-06-25","s":"OPERACION","e":"Cesado","c":"2026-09-27"},{"n":"GERSON ANDRE BEDOYA CHIRINOS","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-08-18","o":"2026-07-18","s":"OPERACION","e":"Activo","c":null},{"n":"SANDRA FABIANA SANDOVAL MANYARI","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-09-13","o":"2026-08-13","s":"OPERACION","e":"Activo","c":null},{"n":"MILAGRO HUARCAYA CORNEJO","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-09-13","o":"2026-08-13","s":"OPERACION","e":"Activo","c":null},{"n":"ALEXMARY RANGEL ACOSTA","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-09-26","o":"2026-08-26","s":"OPERACION","e":"Cesado","c":"2026-10-27"},{"n":"JOSE ABELARDO LIMA CONDORI","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-09-26","o":"2026-08-26","s":"OPERACION","e":"Cesado","c":"2026-10-16"},{"n":"KEVIN WALTER STECHMANN PANDURO","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-09-26","o":"2026-08-26","s":"OJT","e":"Cesado","c":"2026-09-09"},{"n":"NATASHA SARAY AZAF PRONIO","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-09-26","o":"2026-08-26","s":"OPERACION","e":"Activo","c":null},{"n":"GUIANELA LESLY MANRIQUE GASTELU","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-09-26","o":"2026-08-26","s":"OPERACION","e":"Cesado","c":"2026-10-02"},{"n":"MAURICIO ALEJANDRO PEREZ CHAVEZ","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-09-26","o":"2026-08-26","s":"OPERACION","e":"Activo","c":null},{"n":"DAAYAN GLORIA POLO ISLA","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-09-26","o":"2026-08-26","s":"OPERACION","e":"Activo","c":null},{"n":"STEFANIA JOHANA SIESQUEN CUTIN","j":"MARIANA CONSUELO APONTE ALVARADO","h":"BACK HOGAR FIBRA TECNICO","i":"2026-09-26","o":"2026-08-26","s":"OPERACION","e":"Activo","c":null},{"n":"LUIS ALBERTO FLORES CAMPOS","j":"ROY MIGUEL PONCE DE LEON BULLON","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-04","o":"2026-09-04","s":"INDUCCION","e":"Cesado","c":"2026-09-04"},{"n":"DAYANA MISHELL VASQUEZ BARDALEZ","j":"ROY MIGUEL PONCE DE LEON BULLON","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-04","o":"2026-09-04","s":"INDUCCION","e":"Cesado","c":"2026-09-11"},{"n":"JORGE ARNALDO ALEJANDRO GRIMALDOS ROSAZZA","j":"ROY MIGUEL PONCE DE LEON BULLON","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-04","o":"2026-09-04","s":"INDUCCION","e":"Cesado","c":"2026-09-04"},{"n":"NICOLE FIGARI IRIGOYEN","j":"ANDRES EFRAIN CONTRERAS ARENAZA","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-04","o":"2026-09-04","s":"OPERACION","e":"Activo","c":null},{"n":"ERICK GIORDANO OJEDA MASIAS","j":"ROY MIGUEL PONCE DE LEON BULLON","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-04","o":"2026-09-04","s":"INDUCCION","e":"Cesado","c":"2026-09-08"},{"n":"CARLOS ANIBAL WALDE CASTILLO","j":"ROY MIGUEL PONCE DE LEON BULLON","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-04","o":"2026-09-04","s":"INDUCCION","e":"Cesado","c":"2026-09-05"},{"n":"ANNIA YADIRA BARBARAN VALDIVIA","j":"ROY MIGUEL PONCE DE LEON BULLON","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-29","o":"2026-09-29","s":"INDUCCION","e":"Cesado","c":"2026-09-28"},{"n":"JUAN FRANK PALIAN MUNOZ","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-29","o":"2026-09-29","s":"OJT","e":"Activo","c":null},{"n":"JORGE GOMEZ SANCHEZ","j":"ROY MIGUEL PONCE DE LEON BULLON","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-29","o":"2026-09-29","s":"INDUCCION","e":"Cesado","c":"2026-09-28"},{"n":"CHELMY AELYN ROJAS CHUMBIMUNI","j":"ROY MIGUEL PONCE DE LEON BULLON","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-29","o":"2026-09-29","s":"INDUCCION","e":"Cesado","c":"2026-09-28"},{"n":"EDGAR FELIX ESCALANTE","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-10-29","o":"2026-09-29","s":"OJT","e":"Cesado","c":"2026-10-02"},{"n":"RENZO JESUS CAM GUIA","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-11-21","o":"2026-10-21","s":"OJT","e":"Cesado","c":"2026-10-31"},{"n":"ANGELA MARINA LOPEZ VILCHEZ","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-11-21","o":"2026-10-21","s":"OJT","e":"Activo","c":null},{"n":"DAYRA BATIA PIMENTEL NACIMENTO","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-11-21","o":"2026-10-21","s":"OJT","e":"Activo","c":null},{"n":"KAREN SAMANIEGO ACAITURRY","j":"ROBERTO ANDRES GUEVARA DIAZ","h":"FRONT HOGAR FIBRA TECNICO","i":"2026-11-21","o":"2026-10-21","s":"OJT","e":"Activo","c":null}]};
 const EPA = decompress(EPA_B64);
 </script>
 
@@ -1888,6 +1921,91 @@ function avgField(rows, key){
   return v.length ? Math.round((v.reduce(function(a,b){return a+b;},0)/v.length)*100)/100 : null;
 }
 
+/* ---------- Asesores evaluados vs. dotación (como en Claro) ----------
+   "X de Y asesores activos evaluados" del mes: Y = ejecutivos del canal en la dotación de Operaciones
+   (DOTACION_EJEC, la actualiza el script) activos algún día del mes, más todo asesor evaluado aunque no esté en
+   ella. Antigüedad: OJT/Inducción según la dotación; si no, meses desde el ingreso al centro hasta el fin del mes. */
+var ASE_TRAMOS = [['ojt','OJT'],['1-3 meses','1 - 3 meses'],['3-6 meses','3 - 6 meses'],['más de 6 meses','Más de 6 meses'],['', 'Sin dato']];
+var aseAvance = null;
+function aseNorm(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/\s+/g,' ').trim(); }
+function aseTramo(p, fin){
+  if(!p) return '';
+  var s = aseNorm(p.s); if(s==='OJT' || s==='INDUCCION') return 'ojt';
+  var ing = p.o || p.i; if(!ing) return '';
+  var m = (new Date(fin) - new Date(ing)) / 864e5 / 30.4;
+  return m < 3 ? '1-3 meses' : m < 6 ? '3-6 meses' : 'más de 6 meses';
+}
+function aseColor(pc){ return pc>=100 ? 'var(--green)' : pc>=70 ? 'var(--amber)' : 'var(--red)'; }
+function aseBarra(pc, alto){ return '<div class="ase-bar" style="height:'+alto+'px"><div style="width:'+Math.min(100,pc).toFixed(1)+'%;background:'+aseColor(pc)+'"></div></div>'; }
+// un error aquí nunca debe dejar el resto del tablero sin dibujar
+function renderAvanceAsesores(data){ try { calcularAvanceAsesores(data); } catch(e){ aseAvance = null; console.warn('Avance de asesores:', e); } }
+function calcularAvanceAsesores(data){
+  aseAvance = null;
+  var cap = $('kpi-adh-total-caption');
+  if(!data || typeof DOTACION_EJEC === 'undefined' || !DOTACION_EJEC || !DOTACION_EJEC.filas.length) return;
+  var ini = adhMonth + '-01', ult = new Date(+adhMonth.slice(0,4), +adhMonth.slice(5,7), 0), hoy = new Date(), tope = ult < hoy ? ult : hoy;
+  var fin = tope.getFullYear() + '-' + ('0'+(tope.getMonth()+1)).slice(-2) + '-' + ('0'+tope.getDate()).slice(-2);
+  var dot = {}; DOTACION_EJEC.filas.forEach(function(p){ dot[aseNorm(p.n)] = p; });
+  // evaluados con los filtros; la antigüedad se toma de la dotación (los monitoreos no la traen)
+  var tieneAntig = !!adhFilters.antig, antig = tieneAntig ? adhFilters.antig.slice() : [];   // C2C no tiene filtro de antigüedad
+  if(tieneAntig) adhFilters.antig = [];
+  var rows = (data.detalle || []).filter(adhMatchesFilters);
+  if(tieneAntig) adhFilters.antig = antig;
+  var ev = {};
+  rows.forEach(function(r){ if(!r.nombre) return; var t = aseTramo(dot[aseNorm(r.nombre)], fin);
+    if(!antig.length || antig.indexOf(t) !== -1) ev[aseNorm(r.nombre)] = t; });
+  var nEv = Object.keys(ev).length;
+  if(adhFilters.tema){   // la dotación no sabe de temáticas: solo se cuentan los evaluados
+    cap.innerHTML = esc(cap.textContent) + ' · <b>' + nEv + '</b> asesores evaluados'; return;
+  }
+  var sup = adhFilters.supervisor ? aseNorm(adhFilters.supervisor) : '', ases = adhFilters.asesor.map(aseNorm);
+  var faltan = DOTACION_EJEC.filas.filter(function(p){
+    var n = aseNorm(p.n);
+    return !ev[n] && (!p.i || p.i <= fin) && (p.e !== 'Cesado' || (p.c && p.c >= ini))
+      && (!sup || aseNorm(p.j) === sup) && (!ases.length || ases.indexOf(n) !== -1);
+  }).map(function(p){ var q = Object.assign({}, p); q.t = aseTramo(p, fin); return q; })
+    .filter(function(p){ return !antig.length || antig.indexOf(p.t) !== -1; })
+    .sort(function(a,b){ return (a.j||'').localeCompare(b.j||'','es') || a.n.localeCompare(b.n,'es'); });
+  var total = nEv + faltan.length, pc = total ? nEv/total*100 : 0;
+  var evVals = Object.keys(ev).map(function(k){ return ev[k]; });
+  var porTramo = ASE_TRAMOS.map(function(t){
+    var e = evVals.filter(function(x){ return x === t[0]; }).length, f = faltan.filter(function(p){ return p.t === t[0]; }).length;
+    return {tr: t[1], ev: e, total: e + f};
+  }).filter(function(x){ return x.total; });
+  aseAvance = {ev: nEv, total: total, faltan: faltan, porTramo: porTramo, ini: ini, fin: fin};
+  cap.innerHTML = esc(cap.textContent) + '<span class="kpi-ase" title="Clic para ver el avance de asesores evaluados (por antigüedad y quiénes faltan)"><b>'
+    + nEv + '</b> de <b>' + total + '</b> asesores activos evaluados · <b style="color:' + aseColor(pc) + '">' + Math.round(pc) + '%</b> ›</span>';
+}
+function openAvanceAsesores(){
+  if(!aseAvance) return;
+  var a = aseAvance, pc = a.total ? a.ev/a.total*100 : 0;
+  var fF = function(f){ return f ? f.slice(8,10)+'/'+f.slice(5,7)+'/'+f.slice(0,4) : '–'; };
+  $('ase-modal-sub').textContent = 'Del ' + fF(a.ini) + ' al ' + fF(a.fin) + ' · dotación ' + DOTACION_EJEC.archivo.replace(/\.xlsx?$/i, '');
+  $('ase-modal-body').innerHTML =
+    '<div class="av-wrap"><div class="av-total"><div class="av-lbl">Asesores activos evaluados</div>'
+    + '<div class="av-num"><b>' + a.ev + '</b> de <b>' + a.total + '</b> <span style="color:' + aseColor(pc) + '">' + Math.round(pc) + '%</span></div>'
+    + aseBarra(pc, 12)
+    + '<div class="av-sub">' + (a.total - a.ev ? 'Faltan <b>' + (a.total - a.ev) + '</b> por evaluar para llegar al 100%' : '✓ Todos los activos evaluados') + '</div></div>'
+    + '<div class="av-antig"><div class="av-lbl">Por antigüedad</div>'
+    + a.porTramo.map(function(x){ var p = x.ev/x.total*100;
+        return '<div class="av-row"><span class="av-tr">' + x.tr + '</span><span>' + aseBarra(p, 8) + '</span><span class="av-n"><b>' + x.ev + '</b>/' + x.total
+          + '</span><span class="av-p" style="color:' + aseColor(p) + '">' + Math.round(p) + '%</span><span class="av-f">' + (x.total - x.ev ? 'faltan ' + (x.total - x.ev) : '✓') + '</span></div>'; }).join('')
+    + '</div></div>'
+    + (a.faltan.length ? '<div class="av-lbl" style="margin:14px 0 6px;">Faltan por evaluar (' + a.faltan.length + ')</div>'
+      + '<div style="max-height:42vh;overflow-y:auto;"><table class="ase-tbl"><thead><tr><th>#</th><th>Asesor</th><th>Supervisor</th><th>Habilidad</th><th>Antigüedad</th><th>Ingreso plataforma</th><th>Estado</th></tr></thead><tbody>'
+      + a.faltan.map(function(p, i){ var tr = ASE_TRAMOS.filter(function(t){ return t[0] === p.t; })[0];
+          return '<tr><td style="color:#94a3b8">' + (i+1) + '</td><td style="font-weight:700">' + esc(p.n) + '</td><td>' + esc(p.j||'–') + '</td><td>' + esc(p.h||'–')
+            + '</td><td>' + (tr ? tr[1] : '–') + '</td><td>' + fF(p.i) + '</td><td>' + esc(p.e||'–') + (p.c ? ' (' + fF(p.c) + ')' : '') + '</td></tr>'; }).join('')
+      + '</tbody></table></div>' : '')
+    + '<div style="font-size:10.5px;color:#94a3b8;margin-top:8px;">Activos = ejecutivos del canal en la dotación de Operaciones que trabajaron algún día del mes, más cualquier otro asesor evaluado. Antigüedad: OJT/Inducción según la dotación; si no, meses desde el ingreso al centro. "Inactivo" = vacaciones, licencia o día libre a la fecha de la dotación.</div>';
+  $('ase-modal').classList.remove('hidden');
+}
+document.addEventListener('click', function(e){
+  var t = e.target;
+  if(t.closest && (t.closest('#kpi-adh-total') || t.closest('.kpi-ase'))) openAvanceAsesores();
+  if(t.id === 'ase-modal-close' || t.id === 'ase-modal') $('ase-modal').classList.add('hidden');
+});
+
 function renderAdhKpis(){
   var data = currentAdhData();
   var idx = ADH.months.findIndex(function(m){return m.key===adhMonth;});
@@ -1932,6 +2050,7 @@ function renderAdhKpis(){
 
   $('adhPeriodo').textContent = adhMonthLabel() || '–';
   $('kpi-adh-total-caption').textContent = filtered ? 'casos con el filtro activo' : ('casos en ' + (adhMonthLabel() || 'el mes seleccionado'));
+  renderAvanceAsesores(data);
 }
 
 function renderAdhSupervisor(){
